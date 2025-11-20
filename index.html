@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ゴールボールサーチゲーム</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <header class="top">
+    <a id="logoLink" href="https://goalball-kanagawa.org/" target="_blank" rel="noopener">
+      <img id="kgbalogo" src="kgbalogo.png" alt="KGBA ロゴ" />
+    </a>
+    <h1>ゴールボールサーチゲーム</h1>
+  </header>
+
+  <main>
+    <!-- 上段ボタン： ルール / イヤホン左右確認 / 再生停止 -->
+    <section class="controls top-row" aria-label="上段コントロール">
+      <button id="ruleBtn" aria-label="ルール">ルール</button>
+      <button id="checkBtn" aria-label="イヤホンの左右の確認">イヤホンの左右の確認</button>
+      <button id="stopBtn" aria-label="再生停止">再生停止</button>
+    </section>
+
+    <!-- 下段ボタン： ヒント / ヒント鈴のみ / スタート -->
+    <section class="controls bottom-row" aria-label="下段コントロール">
+      <button id="hintBtn" aria-label="ヒント">ヒント</button>
+      <button id="hintBellBtn" aria-label="ヒント 鈴のみ">ヒント／鈴のみ</button>
+      <button id="startBtn" aria-label="スタート">スタート</button>
+    </section>
+
+    <!-- 現在の状態 / 入力表示 / 結果 -->
+    <section id="status" aria-live="polite">
+      <div id="questionLabel">準備完了</div>
+      <div id="currentInput">あなたの回答：なし</div>
+      <div id="result"></div>
+    </section>
+
+    <!-- テンキー（最初は非表示） -->
+    <section id="keypadWrap" aria-label="テンキー">
+      <div id="keypad" aria-hidden="true">
+        <button class="key" data-key="7" aria-label="数字 7">7</button>
+        <button class="key" data-key="8" aria-label="数字 8">8</button>
+        <button class="key" data-key="9" aria-label="数字 9">9</button>
+
+        <button class="key" data-key="4" aria-label="数字 4">4</button>
+        <button class="key" data-key="5" aria-label="数字 5">5</button>
+        <button class="key" data-key="6" aria-label="数字 6">6</button>
+
+        <button class="key" data-key="1" aria-label="数字 1">1</button>
+        <button class="key" data-key="2" aria-label="数字 2">2</button>
+        <button class="key" data-key="3" aria-label="数字 3">3</button>
+
+        <button class="key" data-key="0" aria-label="数字 0">0</button>
+        <button class="key" data-key="." aria-label="ピリオド">.</button>
+        <button class="key confirm" data-key="Enter" aria-label="エンター">決定</button>
+      </div>
+    </section>
+
+    <!-- 再挑戦ボタン（終了後に表示） -->
+    <section id="retryWrap" style="display:none;">
+      <div id="scoreDisplay" aria-live="polite"></div>
+      <button id="retryBtn" class="accent" aria-label="再挑戦">再挑戦</button>
+    </section>
+
+  </main>
+
+  <!-- クレジット -->
+  <footer class="credits">
+    <div>
+      © ゴールボールサーチゲームプロジェクト<br />
+      企画・制作：KGBA ＆ <a id="monLink" href="https://sites.google.com/view/kgba-tochigi/" target="_blank"
+        rel="noopener">MON☆Stars</a><br />
+      無断転載・複製・改変を禁じます<br />
+
+      VOICEVOX: ずんだもん
+    </div>
+    <div class="monlogo">
+      <img src="monlogo.png" alt="MON☆Stars ロゴ" />
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+
+</html>
