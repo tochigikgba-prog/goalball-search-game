@@ -1,0 +1,61 @@
+:root{
+  --bg:#000;
+  --text:#fff;
+  --accent:#FFD600; /* 見やすい黄色 */
+  --accent-contrast:#000;
+  --danger:#FF3B30; /* 再生停止など */
+  --high-contrast-bg:#111;
+  --button-padding:14px 20px;
+  --btn-radius:10px;
+  --gap:16px;
+}
+
+/* 全体 */
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+main{max-width:900px;margin:0 auto;padding:24px;}
+
+/* header */
+header.top{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:12px}
+#kgbalogo{height:48px;display:inline-block;}
+h1{font-size:1.6rem;color:var(--accent);margin:0;}
+
+/* controls rows */
+.controls{display:flex;gap:var(--gap);justify-content:center;margin:12px 0;flex-wrap:wrap}
+.controls button{background:var(--high-contrast-bg);color:var(--text);border:2px solid var(--text);padding:var(--button-padding);border-radius:var(--btn-radius);font-size:1rem;min-width:160px}
+.controls button:active{transform:translateY(1px)}
+
+/* stop button highlight */
+#stopBtn{background:var(--danger);color:#fff;border-color:#fff}
+
+/* bottom accent (start) */
+#startBtn{background:var(--accent);color:var(--accent-contrast);border-color:var(--accent-contrast)}
+
+/* status */
+#status{margin:18px 0;text-align:center}
+#questionLabel{font-weight:700;margin-bottom:6px}
+#currentInput{color:#0ff;margin-bottom:6px}
+#result{font-size:1.2rem;margin-top:6px}
+
+/* keypad */
+#keypadWrap{display:flex;justify-content:center;margin-top:8px}
+#keypad{display:grid;grid-template-columns:repeat(3,96px);grid-auto-rows:64px;gap:10px;align-items:center}
+#keypad button{font-size:1.2rem;padding:8px;border-radius:10px;background:#222;border:2px solid #fff;color:#fff}
+#keypad button.confirm{background:var(--accent);color:var(--accent-contrast);grid-column:3;grid-row:4}
+#keypad button[disabled]{opacity:0.5;pointer-events:none}
+
+/* retry */
+#retryWrap{text-align:center;margin-top:18px}
+#retryBtn.accent{background:#00AEEF;color:#fff;border:2px solid #fff;padding:12px 24px;font-size:1.1rem;border-radius:12px}
+#scoreDisplay{font-size:1.4rem;margin-bottom:8px;color:var(--accent)}
+
+/* credits */
+footer.credits{margin-top:32px;padding:12px;border-top:1px solid #333;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+footer.credits a{color:var(--accent);text-decoration:underline}
+footer .monlogo img{height:32px}
+
+/* responsive */
+@media (max-width:520px){
+  #keypad{grid-template-columns:repeat(3,76px);grid-auto-rows:56px}
+  .controls button{min-width:120px;font-size:0.95rem}
+  #kgbalogo{height:38px}
+}
