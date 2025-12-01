@@ -49,10 +49,30 @@ h1{font-size:1.6rem;color:var(--accent);margin:0;}
 #scoreDisplay{font-size:1.4rem;margin-bottom:8px;color:var(--accent)}
 
 /* credits */
-footer.credits{margin-top:32px;padding:12px;border-top:1px solid #333;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+footer.credits{
+  margin-top:32px;
+  padding:12px;
+  border-top:1px solid #333;
+  display:flex;
+  /* 左右に広げるのをやめて中央に寄せる */
+  justify-content: center;
+  /* 縦に並べる */
+  flex-direction: column; 
+  align-items: center; /* 中央揃え */
+  gap:12px;
+  text-align: center; /* テキストも中央寄せ */
+}
 footer.credits a{color:var(--accent);text-decoration:underline}
-footer .monlogo img{height:32px}
+footer .monlogo img{height:24px; width: auto;} /* heightを24pxに */
 
+/* Responsiveセクションの修正（ロゴサイズに関するメディアクエリも念のため確認） */
+@media (max-width:520px){
+  #keypad{grid-template-columns:repeat(3,76px);grid-auto-rows:56px}
+  .controls button{min-width:120px;font-size:0.95rem}
+  #kgbalogo{height:38px}
+  /* ここに monlogo の調整があれば追記 */
+  footer .monlogo img{height:20px;} /* 小さい画面でもさらに小さく調整 */
+}
 /* responsive */
 @media (max-width:520px){
   #keypad{grid-template-columns:repeat(3,76px);grid-auto-rows:56px}
