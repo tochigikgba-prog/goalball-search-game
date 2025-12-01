@@ -1,6 +1,5 @@
 /* script.js
- - FIX1：決定ボタンの入力音（enterSound）が完了してから、正解/不正解の判定音声が流れるように修正。
- - FIX2：前回修正したスタートボタンのロジックもそのまま維持。
+ - FIX：モバイル環境で2問目以降の出題音声が流れない問題（ブラウザの自動再生制限）に対応するため、再生ロジックを強化。
 */
 
 const SOUND_PATH = "sound/";
@@ -84,7 +83,6 @@ function playAudioElement(filename, isInput = false, buttonElement = null){
   return new Promise((resolve, reject) => {
     if (!filename) { resolve(); return; }
     
-    // isInput=true の場合、他の音を止めない（入力音、決定音）
     if (!isInput && isPlaying) {
         stopAll(); 
     } 
@@ -124,14 +122,17 @@ function playAudioElement(filename, isInput = false, buttonElement = null){
           playingButton = null;
       }
       console.error("audio error", filename, ev);
+      // ★ 最終修正: 再生エラー時でもresolveし、次の問題への処理を止めない
       resolve(); 
     };
     
     a.addEventListener("ended", onEnded);
     a.addEventListener("error", onErr);
     
+    // ★ 最終修正: .play() の失敗を catch し、エラー時にも onErr を通して resolve する
     a.play().then(() => {
     }).catch(err => {
+      // play() が失敗した場合、これはモバイルの自動再生制限によることが多い
       onErr(err); 
     });
   });
@@ -219,6 +220,9 @@ async function nextQuestion(){
     endGame();
     return;
   }
+  
+  stopAll(); 
+
   const q = gameQueue[questionIndex];
   if(questionLabel) questionLabel.textContent = `問題 ${questionIndex+1} / ${TOTAL_QUESTIONS}`;
   if(currentInput) currentInput.textContent = "あなたの回答：なし";
@@ -227,11 +231,17 @@ async function nextQuestion(){
   if(a11yStatus) a11yStatus.textContent = `問題 ${questionIndex+1}、再生します。`;
   
   const filename = QUIZ_FILES[q];
-  if (!filename){ console.error("no quiz file mapping for", q); return; }
+  if (!filename){ console.error("no quiz file mapping for", q); 
+    disableControlsDuringPlayback(false);
+    questionIndex++;
+    return;
+  }
   
   disableControlsDuringPlayback(true);
-  stopRequested = false;
+  
+  // ★ 最終修正: 問題の再生を試み、モバイルで失敗してもゲームは継続する
   await playAudioElement(filename, false, startBtn); 
+  
   disableControlsDuringPlayback(false); 
   questionIndex++;
 }
@@ -246,9 +256,7 @@ async function confirmAnswer(){
   const currentQIndex = questionIndex - 1;
   if (currentQIndex < 0 || !gameQueue[currentQIndex]) { return; }
   
-  // ★ 修正: 決定ボタンの音声を待つ (isInput=trueだが、ここではシリアル再生のためにawaitを使用)
   if (audioMap[enterSound]) {
-      // isInput=true (他の音を止めない) の設定はそのまま、しかし await で完了を待つ
       await playAudioElement(enterSound, true); 
   }
   
@@ -276,6 +284,7 @@ async function confirmAnswer(){
   disableControlsDuringPlayback(false); 
   
   if (questionIndex < TOTAL_QUESTIONS){
+    // ★ 最終修正: 待機時間はそのまま
     await new Promise(r=>setTimeout(r,1500)); 
     nextQuestion(); 
   } else {
