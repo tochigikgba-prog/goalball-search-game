@@ -1,34 +1,21 @@
 /* script.js
- - 前提：すべての音声ファイルは sound/ フォルダにある
- - 機能：4.5を含む小数点入力、キーパッド/Enterでの決定、3問中2問以上で成功音源再生。
- - 修正点：speak()を削除し、用意された音声ファイルのみを使用。成功音源(game_success.mp3)のロジック追加。
- - FIX：endGame後にボタンの無効化状態を解除。
+ - FIX1：決定ボタンの入力音（enterSound）が完了してから、正解/不正解の判定音声が流れるように修正。
+ - FIX2：前回修正したスタートボタンのロジックもそのまま維持。
 */
 
 const SOUND_PATH = "sound/";
 
 // --- 音声ファイル一覧（名前はexact） ---
 const QUIZ_FILES = {
-  "0":"quiz_0.mp3",
-  "1":"quiz_1.mp3",
-  "2":"quiz_2.mp3",
-  "3":"quiz_3.mp3",
-  "4":"quiz_4.mp3",
-  "4.5":"quiz_45.mp3",
-  "5":"quiz_5.mp3",
-  "6":"quiz_6.mp3",
-  "7":"quiz_7.mp3",
-  "8":"quiz_8.mp3",
-  "9":"quiz_9.mp3"
+  "0":"quiz_0.mp3", "1":"quiz_1.mp3", "2":"quiz_2.mp3", "3":"quiz_3.mp3", 
+  "4":"quiz_4.mp3", "4.5":"quiz_45.mp3", "5":"quiz_5.mp3", "6":"quiz_6.mp3", 
+  "7":"quiz_7.mp3", "8":"quiz_8.mp3", "9":"quiz_9.mp3"
 };
-
-// answer file mapping (不正解時に流す正解の音)
 const ANSWER_FILES = {
   "0":"answer_0.mp3","1":"answer_1.mp3","2":"answer_2.mp3","3":"answer_3.mp3",
   "4":"answer_4.mp3","4.5":"answer_45.mp3","5":"answer_5.mp3","6":"answer_6.mp3",
   "7":"answer_7.mp3","8":"answer_8.mp3","9":"answer_9.mp3"
 };
-
 const seikaiFile = "seikai.mp3";
 const noFile = "no.mp3";
 const ruleFiles = ["zunda_rule001.mp3","zunda_rule002.mpuzunda_rule003.mp3","zunda_rule004.mp3","zunda_rule005.mp3"];
@@ -37,6 +24,14 @@ const hintBellFiles = ["hint.mp3"];
 const checkFile = "zunda_check.mp3";
 const enterSound = "enter.mp3";
 const gameSuccessFile = "game_success.mp3"; 
+
+// 入力数字の音声ファイルマップ
+const INPUT_FILES = {
+  "0": "input_0.mp3", "1": "input_1.mp3", "2": "input_2.mp3", "3": "input_3.mp3",
+  "4": "input_4.mp3", "5": "input_5.mp3", "6": "input_6.mp3", "7": "input_7.mp3",
+  "8": "input_8.mp3", "9": "input_9.mp3", ".": "input_dot.mp3",
+  "C": "input_clear.mp3" 
+};
 
 // --- UI要素 ---
 const ruleBtn = document.getElementById("ruleBtn");
@@ -58,6 +53,7 @@ const a11yStatus = document.getElementById("a11yStatus");
 let audioMap = {}; 
 let currentAudio = null; 
 let isPlaying = false; 
+let playingButton = null;
 let gameQueue = []; 
 let questionIndex = 0;
 let playerInput = ""; 
@@ -79,13 +75,20 @@ function preloadAll(){
   ruleFiles.forEach(preload);
   hintSeqFiles.forEach(preload);
   hintBellFiles.forEach(preload);
+  Object.values(INPUT_FILES).forEach(preload); 
 }
 preloadAll();
 
 // ----- II. 再生ユーティリティ -----
-function playAudioElement(filename){
+function playAudioElement(filename, isInput = false, buttonElement = null){
   return new Promise((resolve, reject) => {
     if (!filename) { resolve(); return; }
+    
+    // isInput=true の場合、他の音を止めない（入力音、決定音）
+    if (!isInput && isPlaying) {
+        stopAll(); 
+    } 
+    
     let a;
     if (audioMap[filename]) {
       try { a = audioMap[filename].cloneNode(true); } catch (e) { a = new Audio(SOUND_PATH + filename); }
@@ -93,38 +96,53 @@ function playAudioElement(filename){
       a = new Audio(SOUND_PATH + filename);
     }
     a.preload = "auto";
+    
     try { a.pause(); a.currentTime = 0; } catch(e){}
-    currentAudio = a;
-    isPlaying = true;
+    
+    if (!isInput) {
+        currentAudio = a;
+        isPlaying = true;
+        playingButton = buttonElement;
+    }
+    
     const onEnded = () => {
       a.removeEventListener("ended", onEnded);
       a.removeEventListener("error", onErr);
-      currentAudio = null;
-      isPlaying = false;
+      if (currentAudio === a) {
+          currentAudio = null;
+          isPlaying = false;
+          playingButton = null;
+      }
       resolve();
     };
     const onErr = (ev) => {
       a.removeEventListener("error", onErr);
       a.removeEventListener("ended", onEnded);
-      isPlaying = false;
-      currentAudio = null;
+      if (currentAudio === a) {
+          currentAudio = null;
+          isPlaying = false;
+          playingButton = null;
+      }
       console.error("audio error", filename, ev);
       resolve(); 
     };
+    
     a.addEventListener("ended", onEnded);
     a.addEventListener("error", onErr);
-    a.play().catch(err => {
-      console.warn("play promise rejected", err);
-      onEnded();
+    
+    a.play().then(() => {
+    }).catch(err => {
+      onErr(err); 
     });
   });
 }
 
-async function playSequence(files, gap = 500){
-  if (isPlaying) return;
+async function playSequence(files, gap = 500, buttonElement = null){
+  stopAll(); 
+  
   for (const f of files){
     if (stopRequested) break;
-    await playAudioElement(f);
+    await playAudioElement(f, false, buttonElement);
     if (gap > 0 && !stopRequested){
       await new Promise(r => setTimeout(r, gap));
     }
@@ -138,13 +156,16 @@ function stopAll(){
     try { currentAudio.pause(); currentAudio.currentTime = 0; } catch(e){}
   }
   isPlaying = false;
-  setTimeout(()=>{ stopRequested=false; }, 50);
+  playingButton = null; 
+  stopRequested = false; 
 }
 
 function disableControlsDuringPlayback(disabled){
-  const controls = [ruleBtn, checkBtn, hintBtn, hintBellBtn, startBtn, retryBtn, ...document.querySelectorAll("#keypad button")];
+  const controls = [ruleBtn, checkBtn, stopBtn, hintBtn, hintBellBtn, startBtn, retryBtn, ...document.querySelectorAll("#keypad button")];
   controls.forEach(el=>{
-    if (el) el.disabled = disabled;
+    if (el && el.id !== 'stopBtn' && !el.closest('#keypad')) {
+        el.disabled = disabled; 
+    }
   });
 }
 
@@ -166,14 +187,18 @@ function showKeypad(show){
   }
   if(keypadWrap) {
     keypadWrap.style.display = show ? "flex" : "none"; 
-    keypadWrap.setAttribute("aria-hidden", show ? "false" : "true");
     if(startBtn) startBtn.setAttribute("aria-expanded", show ? "true" : "false");
   }
 }
 
 // --- IV. ゲームフロー ---
 async function startGame(){
-  if (isPlaying) return;
+  if (isPlaying && playingButton === startBtn) {
+      return; 
+  }
+  
+  stopAll(); 
+
   // reset
   score = 0;
   questionIndex = 0;
@@ -183,7 +208,6 @@ async function startGame(){
   if(retryWrap) retryWrap.style.display = "none";
   if(a11yStatus) a11yStatus.textContent = "ゲームを開始します。";
 
-  // prepare queue
   gameQueue = pick3Questions();
   showKeypad(true); 
   await new Promise(r=>setTimeout(r, 500));
@@ -207,13 +231,13 @@ async function nextQuestion(){
   
   disableControlsDuringPlayback(true);
   stopRequested = false;
-  await playAudioElement(filename);
-  disableControlsDuringPlayback(false);
+  await playAudioElement(filename, false, startBtn); 
+  disableControlsDuringPlayback(false); 
   questionIndex++;
 }
 
 async function confirmAnswer(){
-  if (isPlaying) return; 
+  if (isPlaying && playingButton === startBtn) return;
   if (playerInput === "") {
     if(a11yStatus) a11yStatus.textContent = "回答を入力してください。";
     return;
@@ -222,7 +246,11 @@ async function confirmAnswer(){
   const currentQIndex = questionIndex - 1;
   if (currentQIndex < 0 || !gameQueue[currentQIndex]) { return; }
   
-  if (audioMap[enterSound]) await playAudioElement(enterSound);
+  // ★ 修正: 決定ボタンの音声を待つ (isInput=trueだが、ここではシリアル再生のためにawaitを使用)
+  if (audioMap[enterSound]) {
+      // isInput=true (他の音を止めない) の設定はそのまま、しかし await で完了を待つ
+      await playAudioElement(enterSound, true); 
+  }
   
   const expected = gameQueue[currentQIndex];
   const a = (playerInput || "").trim();
@@ -234,20 +262,24 @@ async function confirmAnswer(){
     score++;
     if(resultDiv) resultDiv.textContent = "正解！";
     if(a11yStatus) a11yStatus.textContent = "正解です！";
-    await playAudioElement(seikaiFile);
+    await playAudioElement(seikaiFile, false, startBtn); 
   } else {
     if(resultDiv) resultDiv.textContent = `不正解... 正解は ${b}`;
     if(a11yStatus) a11yStatus.textContent = `不正解です。正解は ${b} でした。`;
-    await playAudioElement(noFile);
+    await playAudioElement(noFile, false, startBtn);
     const ansFile = ANSWER_FILES[b] || QUIZ_FILES[b];
-    if (ansFile) await playAudioElement(ansFile);
+    if (ansFile) {
+        await playAudioElement(ansFile, false, startBtn);
+    }
   }
   
+  disableControlsDuringPlayback(false); 
+  
   if (questionIndex < TOTAL_QUESTIONS){
-    await new Promise(r=>setTimeout(r,1500));
-    nextQuestion();
+    await new Promise(r=>setTimeout(r,1500)); 
+    nextQuestion(); 
   } else {
-    endGame();
+    endGame(); 
   }
 }
 
@@ -256,59 +288,51 @@ async function endGame(){
   if(questionLabel) questionLabel.textContent = "ゲーム終了";
   if(resultDiv) resultDiv.textContent = "";
   
+  disableControlsDuringPlayback(true);
+  
   if (score >= 2) {
       if (audioMap[gameSuccessFile]) {
-          await playAudioElement(gameSuccessFile);
+          await playAudioElement(gameSuccessFile, false, startBtn);
       }
       if(a11yStatus) a11yStatus.textContent = `ゲーム終了。あなたのスコアは ${score} 点です。お見事！`;
   } else {
       if(a11yStatus) a11yStatus.textContent = `ゲーム終了。あなたのスコアは ${score} 点です。再挑戦ボタンで再び遊べます。`;
   }
   
+  disableControlsDuringPlayback(false); 
+  
   if(scoreDisplay) scoreDisplay.textContent = `あなたのスコア： ${score} / ${TOTAL_QUESTIONS}`;
   if(retryWrap) retryWrap.style.display = "block";
-  
-  // ★ FIX: 再挑戦ボタンを含む全てのコントロールを有効に戻す
-  disableControlsDuringPlayback(false); 
 }
 
 
 // --- V. イベントリスナー ---
-ruleBtn && ruleBtn.addEventListener("click", async () => {
-  if (isPlaying) return;
-  disableControlsDuringPlayback(true);
+async function handleAuxButton(button, files, gap = 500){
+  if (isPlaying && playingButton === button) {
+      stopAll(); 
+      if(a11yStatus) a11yStatus.textContent = "再生を停止しました";
+      return;
+  }
+  
+  if (isPlaying && playingButton === startBtn) return;
+  
   stopRequested = false;
-  await playSequence(ruleFiles, 500);
-  disableControlsDuringPlayback(false);
-});
+  
+  if(a11yStatus) a11yStatus.textContent = `${button.textContent} の再生を開始します。`;
+  await playSequence(files, gap, button);
+  if(!isPlaying) { 
+    if(a11yStatus) a11yStatus.textContent = `${button.textContent} の再生が完了しました。`;
+  }
+}
 
-checkBtn && checkBtn.addEventListener("click", async () => {
-  if (isPlaying) return;
-  disableControlsDuringPlayback(true);
-  stopRequested = false;
-  await playSequence([checkFile], 0);
-  disableControlsDuringPlayback(false);
-});
-
-hintBtn && hintBtn.addEventListener("click", async () => {
-  if (isPlaying) return;
-  disableControlsDuringPlayback(true);
-  stopRequested = false;
-  await playSequence(hintSeqFiles, 500); 
-  disableControlsDuringPlayback(false);
-});
-
-hintBellBtn && hintBellBtn.addEventListener("click", async () => {
-  if (isPlaying) return;
-  disableControlsDuringPlayback(true);
-  stopRequested = false;
-  await playSequence(hintBellFiles, 500); 
-  disableControlsDuringPlayback(false);
-});
+ruleBtn && ruleBtn.addEventListener("click", () => handleAuxButton(ruleBtn, ruleFiles));
+checkBtn && checkBtn.addEventListener("click", () => handleAuxButton(checkBtn, [checkFile], 0));
+hintBtn && hintBtn.addEventListener("click", () => handleAuxButton(hintBtn, hintSeqFiles));
+hintBellBtn && hintBellBtn.addEventListener("click", () => handleAuxButton(hintBellBtn, hintBellFiles));
 
 stopBtn && stopBtn.addEventListener("click", () => {
   stopAll();
-  disableControlsDuringPlayback(false);
+  disableControlsDuringPlayback(false); 
   if(resultDiv) resultDiv.textContent = "再生を停止しました";
   if(a11yStatus) a11yStatus.textContent = "再生を停止しました";
 });
@@ -317,7 +341,7 @@ startBtn && startBtn.addEventListener("click", startGame);
 retryBtn && retryBtn.addEventListener("click", startGame);
 
 // キーパッド入力処理
-document.querySelectorAll("#keypad .key").forEach(btn=>{
+document.querySelectorAll("#keypad .key, #keypad .confirm").forEach(btn=>{
   btn.addEventListener("click",(e)=>{
     const k = btn.getAttribute("data-key");
     handleKeyInput(k);
@@ -326,24 +350,43 @@ document.querySelectorAll("#keypad .key").forEach(btn=>{
 
 document.addEventListener("keydown", (e)=>{
   const key = e.key;
-  if (["0","1","2","3","4","5","6","7","8","9","."].includes(key)){
-    handleKeyInput(key);
+  if (["0","1","2","3","4","5","6","7","8","9",".", "c", "C"].includes(key)){
+    handleKeyInput(key.toUpperCase());
   } else if (key === "Enter"){
     if (questionIndex>0) confirmAnswer();
   }
 });
 
 function handleKeyInput(k){
-  if (isPlaying) return; 
+  if (questionIndex === 0 || questionIndex > TOTAL_QUESTIONS) return;
+  
   if (k === "Enter"){
     confirmAnswer();
     return;
   }
   
-  if (questionIndex === 0 || questionIndex > TOTAL_QUESTIONS) return;
+  // クリアボタンの処理
+  if (k === "C") {
+      playerInput = ""; 
+      
+      const inputFilename = INPUT_FILES["C"];
+      if (inputFilename) {
+          playAudioElement(inputFilename, true).catch(e => console.error("Input audio failed", e)); 
+      }
+      
+      if(currentInput) currentInput.textContent = `あなたの回答：なし`;
+      if(a11yStatus) a11yStatus.textContent = `入力がクリアされました。`;
+      return; 
+  }
   
+  // 数字・ピリオドの処理
   if (k === "." && playerInput.includes(".")) return;
   if (!["0","1","2","3","4","5","6","7","8","9","."].includes(k)) return;
+  
+  const inputFilename = INPUT_FILES[k];
+  if (inputFilename) {
+      playAudioElement(inputFilename, true).catch(e => console.error("Input audio failed", e)); 
+  }
   
   playerInput += k;
   if(currentInput) currentInput.textContent = `あなたの回答：${playerInput}`;

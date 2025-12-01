@@ -13,22 +13,33 @@
 /* 全体 */
 html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Segoe UI", Roboto, "Helvetica Neue", Arial;}
 main{max-width:900px;margin:0 auto;padding:24px;}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
 
 /* header */
 header.top{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:12px}
 #kgbalogo{height:48px;display:inline-block;}
 h1{font-size:1.6rem;color:var(--accent);margin:0;}
 
-/* controls rows */
-.controls{display:flex;gap:var(--gap);justify-content:center;margin:12px 0;flex-wrap:wrap}
-.controls button{background:var(--high-contrast-bg);color:var(--text);border:2px solid var(--text);padding:var(--button-padding);border-radius:var(--btn-radius);font-size:1rem;min-width:160px}
+/* ★ コントロールボタンセクション（前回と同じ） ★ */
+.controls{display:flex;gap:var(--gap);justify-content:center;margin:12px 0;flex-wrap:wrap;}
+.controls button{
+    background:var(--high-contrast-bg);
+    color:var(--text);
+    border:2px solid var(--text);
+    padding:var(--button-padding);
+    border-radius:var(--btn-radius);
+    font-size:1rem;
+    min-width:160px;
+    width: calc(50% - (var(--gap) / 2)); 
+    max-width: 300px; 
+    box-sizing: border-box;
+}
+
 .controls button:active{transform:translateY(1px)}
-
-/* stop button highlight */
-#stopBtn{background:var(--danger);color:#fff;border-color:#fff}
-
-/* bottom accent (start) */
-#startBtn{background:var(--accent);color:var(--accent-contrast);border-color:var(--accent-contrast)}
+.control-row-2 button { background-color: #333; }
+.control-row-3 button { border-color: var(--accent); }
+#stopBtn{background:var(--danger);color:#fff;border-color:#fff;order: 2;} 
+#startBtn{background:var(--accent);color:var(--accent-contrast);border-color:var(--accent-contrast);order: 1;} 
 
 /* status */
 #status{margin:18px 0;text-align:center}
@@ -36,12 +47,40 @@ h1{font-size:1.6rem;color:var(--accent);margin:0;}
 #currentInput{color:#0ff;margin-bottom:6px}
 #result{font-size:1.2rem;margin-top:6px}
 
-/* keypad */
+/* ★ KEYPAD 修正箇所 ★ */
 #keypadWrap{display:flex;justify-content:center;margin-top:8px}
-#keypad{display:grid;grid-template-columns:repeat(3,96px);grid-auto-rows:64px;gap:10px;align-items:center}
-#keypad button{font-size:1.2rem;padding:8px;border-radius:10px;background:#222;border:2px solid #fff;color:#fff}
-#keypad button.confirm{background:var(--accent);color:var(--accent-contrast);grid-column:3;grid-row:4}
+#keypad{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(64px, 1fr)); 
+    grid-auto-rows:clamp(64px, 12vw, 80px); 
+    gap:10px;
+    align-items:center;
+    max-width:320px; 
+    width: 90%; 
+    margin: 0 auto;
+}
+#keypad button{font-size:1.4rem;padding:8px;border-radius:10px;background:#222;border:2px solid #fff;color:#fff}
+
+/* ★ 決定ボタンの配置指定を削除し、HTMLの並び順に従わせる */
+#keypad button.confirm{
+    background:var(--accent);
+    color:var(--accent-contrast);
+    font-size: 1.1rem;
+    /* grid-column:3; grid-row:4; の指定を削除 */
+}
 #keypad button[disabled]{opacity:0.5;pointer-events:none}
+
+/* ★ 修正: クリアボタンのスタイル追加 */
+#keypad button.clear {
+  background: #555; 
+  color: #fff;
+  font-weight: bold;
+}
+/* ★ 修正: Cボタンをテンキーのフル幅に広げる */
+#keypad button.full-width {
+    grid-column: 1 / span 3; /* 1列目から3列目まで結合 */
+}
+
 
 /* retry */
 #retryWrap{text-align:center;margin-top:18px}
@@ -54,28 +93,23 @@ footer.credits{
   padding:12px;
   border-top:1px solid #333;
   display:flex;
-  /* 左右に広げるのをやめて中央に寄せる */
   justify-content: center;
-  /* 縦に並べる */
   flex-direction: column; 
-  align-items: center; /* 中央揃え */
+  align-items: center;
   gap:12px;
-  text-align: center; /* テキストも中央寄せ */
+  text-align: center;
 }
 footer.credits a{color:var(--accent);text-decoration:underline}
-footer .monlogo img{height:24px; width: auto;} /* heightを24pxに */
+footer .monlogo img{height:24px; width: auto;} 
 
-/* Responsiveセクションの修正（ロゴサイズに関するメディアクエリも念のため確認） */
+/* responsive: スマホでボタンを完全に縦並びにする（前回と同じ） */
 @media (max-width:520px){
-  #keypad{grid-template-columns:repeat(3,76px);grid-auto-rows:56px}
-  .controls button{min-width:120px;font-size:0.95rem}
+  .controls button{min-width: unset;width: 100%;margin-bottom: 8px;font-size:0.95rem; padding: 10px 15px;}
+  #stopBtn{ order: unset; }
+  #startBtn{ order: unset; }
+
+  .controls {flex-direction: column;gap: 0;margin: 6px 0;}
+  
   #kgbalogo{height:38px}
-  /* ここに monlogo の調整があれば追記 */
-  footer .monlogo img{height:20px;} /* 小さい画面でもさらに小さく調整 */
-}
-/* responsive */
-@media (max-width:520px){
-  #keypad{grid-template-columns:repeat(3,76px);grid-auto-rows:56px}
-  .controls button{min-width:120px;font-size:0.95rem}
-  #kgbalogo{height:38px}
+  footer .monlogo img{height:20px;}
 }

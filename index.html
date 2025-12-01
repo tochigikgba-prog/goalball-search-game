@@ -1,124 +1,75 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ゴールボールサーチゲーム</title>
-  <link rel="stylesheet" href="style.css" />
-  <!-- 最低限のアクセシビリティ用スタイル（必要なら style.css に移してください） -->
-  <style>
-    /* 画面では非表示だがスクリーンリーダーに読み上げられる要素用 */
-    .sr-only {
-      position: absolute !important;
-      width: 1px; height: 1px;
-      padding: 0; margin: -1px;
-      overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
-    }
-    /* スキップリンク（フォーカス時のみ表示） */
-    .skip-link {
-      position: absolute;
-      left: -9999px;
-      top: auto;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-    }
-    .skip-link:focus {
-      left: 10px;
-      top: 10px;
-      width: auto;
-      height: auto;
-      padding: 8px;
-      background: #000;
-      color: #fff;
-      z-index: 1000;
-    }
-    /* フォーカスの可視化（アクセシビリティ重要） */
-    button:focus, [tabindex]:focus {
-      outline: 3px solid #ffbf47;
-      outline-offset: 2px;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-  <!-- スキップリンク -->
-  <a class="skip-link" href="#main" aria-label="メインコンテンツへスキップ">メインへ移動</a>
 
-  <header class="top" role="banner">
-    <a id="logoLink" href="https://goalball-kanagawa.org/" target="_blank" rel="noopener noreferrer">
-      <img id="kgbalogo" src="kgbalogo.png" alt="KGBA ロゴ" />
-    </a>
-    <h1>ゴールボールサーチゲーム</h1>
-  </header>
+  <main>
+    <header class="top">
+      <img id="kgbalogo" src="kgbalogo.png" alt="KGBAロゴ" />
+      <h1>ゴールボールサーチゲーム</h1>
+    </header>
 
-  <main id="main" role="main" tabindex="0">
-    <!-- 説明（スクリーンリーダー向け） -->
-    <div id="intro" class="sr-only">
-      このページは視覚障害のある方にも遊んでいただけるよう、音声とキーボード操作を意識した設計です。
-      上段のボタンでルールやイヤホン左右確認、再生停止ができます。下段のボタンでヒントやスタートができます。
-      テンキーは画面上に表示されている場合、数字ボタンで入力し、決定ボタンを押してください。
-    </div>
-
-    <!-- 上段ボタン： ルール / イヤホン左右確認 / 再生停止 -->
-    <section class="controls top-row" aria-label="上段コントロール" role="region">
+    <section class="controls control-row-1" aria-label="情報確認" role="region">
       <button id="ruleBtn" aria-label="ルール" type="button">ルール</button>
       <button id="checkBtn" aria-label="イヤホンの左右の確認" type="button">イヤホンの左右の確認</button>
+    </section>
+
+    <section class="controls control-row-2" aria-label="ヒント" role="region">
+      <button id="hintBtn" aria-label="ヒント" type="button">ヒント</button>
+      <button id="hintBellBtn" aria-label="ヒント 鈴のみ" aria-pressed="false" type="button">ヒント／鈴のみ</button>
+    </section>
+
+    <section class="controls control-row-3" aria-label="ゲーム操作" role="region">
+      <button id="startBtn" class="accent" aria-label="スタート" aria-controls="keypadWrap" aria-expanded="false" type="button">スタート</button>
       <button id="stopBtn" aria-label="再生停止" type="button">再生停止</button>
     </section>
 
-    <!-- 下段ボタン： ヒント / ヒント鈴のみ / スタート -->
-    <section class="controls bottom-row" aria-label="下段コントロール" role="region">
-      <button id="hintBtn" aria-label="ヒント" type="button">ヒント</button>
-      <button id="hintBellBtn" aria-label="ヒント 鈴のみ" aria-pressed="false" type="button">ヒント／鈴のみ</button>
-      <button id="startBtn" aria-label="スタート" aria-controls="keypadWrap" aria-expanded="false" type="button">スタート</button>
-    </section>
-
-    <!-- 現在の状態 / 入力表示 / 結果 -->
-    <section id="status" aria-live="polite" aria-atomic="true" role="status">
-      <div id="questionLabel">準備完了</div>
+    <section id="status" role="status" aria-live="polite">
+      <div id="questionLabel">ようこそ！スタートボタンを押して下さい。</div>
       <div id="currentInput">あなたの回答：なし</div>
       <div id="result"></div>
     </section>
 
-    <!-- スクリーンリーダー向け逐次通知用（スクリプトはここを更新してください） -->
-    <div id="a11yStatus" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+    <section id="keypadWrap" aria-label="数字入力" role="region">
+      <div id="keypad" role="group" aria-label="数字入力パッド">
+        <button class="key" data-key="7" type="button">7</button>
+        <button class="key" data-key="8" type="button">8</button>
+        <button class="key" data-key="9" type="button">9</button>
+        
+        <button class="key" data-key="4" type="button">4</button>
+        <button class="key" data-key="5" type="button">5</button>
+        <button class="key" data-key="6" type="button">6</button>
+        
+        <button class="key" data-key="1" type="button">1</button>
+        <button class="key" data-key="2" type="button">2</button>
+        <button class="key" data-key="3" type="button">3</button>
+        
+        <button class="key" data-key="0" type="button">0</button>
+        <button class="key" data-key="." type="button">.</button>
+        <button class="confirm" data-key="Enter" type="button">決定</button>
 
-    <!-- テンキー（最初は非表示） -->
-    <section id="keypadWrap" aria-label="テンキー" aria-hidden="true">
-      <div id="keypad" aria-hidden="true" role="group" aria-label="テンキー">
-        <button class="key" data-key="7" aria-label="数字 7" type="button">7</button>
-        <button class="key" data-key="8" aria-label="数字 8" type="button">8</button>
-        <button class="key" data-key="9" aria-label="数字 9" type="button">9</button>
-
-        <button class="key" data-key="4" aria-label="数字 4" type="button">4</button>
-        <button class="key" data-key="5" aria-label="数字 5" type="button">5</button>
-        <button class="key" data-key="6" aria-label="数字 6" type="button">6</button>
-
-        <button class="key" data-key="1" aria-label="数字 1" type="button">1</button>
-        <button class="key" data-key="2" aria-label="数字 2" type="button">2</button>
-        <button class="key" data-key="3" aria-label="数字 3" type="button">3</button>
-
-        <button class="key" data-key="0" aria-label="数字 0" type="button">0</button>
-        <button class="key" data-key="." aria-label="ピリオド" type="button">.</button>
-        <button class="key confirm" data-key="Enter" aria-label="エンター" type="button">決定</button>
+        <button class="key clear full-width" data-key="C" type="button">C</button>
       </div>
     </section>
 
-    <!-- 再挑戦ボタン（終了後に表示） -->
     <section id="retryWrap" style="display:none;" aria-hidden="true" role="region" aria-label="再挑戦">
       <div id="scoreDisplay" aria-live="polite"></div>
       <button id="retryBtn" class="accent" aria-label="再挑戦" type="button">再挑戦</button>
     </section>
+    
+    <div id="a11yStatus" class="sr-only" aria-live="assertive"></div>
+    
+  </main>
 
-
-  <!-- クレジット -->
   <footer class="credits" role="contentinfo">
     <div>
       © ゴールボールサーチゲームプロジェクト<br />
-      企画・制作：<a id="monLink" href="about:blank" target="_blank"
-        rel="noopener noreferrer">KGBA</a> ＆ <a id="monLink" href="https://sites.google.com/view/kgba-tochigi/" target="_blank"
+      企画・制作：KGBA ＆ <a id="monLink" href="https://sites.google.com/view/kgba-tochigi/" target="_blank"
         rel="noopener noreferrer">MON☆Stars</a><br />
       無断転載・複製・改変を禁じます<br />
 
@@ -133,5 +84,4 @@
 
   <script src="script.js" defer></script>
 </body>
-
 </html>
