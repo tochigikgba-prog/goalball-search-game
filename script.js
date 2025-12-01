@@ -1,5 +1,5 @@
 /* script.js
- - FIX：モバイル環境で2問目以降の出題音声が流れない問題（ブラウザの自動再生制限）に対応するため、再生ロジックを強化。
+ - FIX：モバイル環境で2問目以降の出題音声が流れない問題に対応するため、回答判定後の待ち時間(1.5秒)を削除し、次の問題への遷移を高速化。
 */
 
 const SOUND_PATH = "sound/";
@@ -122,17 +122,14 @@ function playAudioElement(filename, isInput = false, buttonElement = null){
           playingButton = null;
       }
       console.error("audio error", filename, ev);
-      // ★ 最終修正: 再生エラー時でもresolveし、次の問題への処理を止めない
       resolve(); 
     };
     
     a.addEventListener("ended", onEnded);
     a.addEventListener("error", onErr);
     
-    // ★ 最終修正: .play() の失敗を catch し、エラー時にも onErr を通して resolve する
     a.play().then(() => {
     }).catch(err => {
-      // play() が失敗した場合、これはモバイルの自動再生制限によることが多い
       onErr(err); 
     });
   });
@@ -239,7 +236,6 @@ async function nextQuestion(){
   
   disableControlsDuringPlayback(true);
   
-  // ★ 最終修正: 問題の再生を試み、モバイルで失敗してもゲームは継続する
   await playAudioElement(filename, false, startBtn); 
   
   disableControlsDuringPlayback(false); 
@@ -284,8 +280,8 @@ async function confirmAnswer(){
   disableControlsDuringPlayback(false); 
   
   if (questionIndex < TOTAL_QUESTIONS){
-    // ★ 最終修正: 待機時間はそのまま
-    await new Promise(r=>setTimeout(r,1500)); 
+    // ★ 修正: 回答判定後の待ち時間を削除し、すぐに次の問題再生へ
+    // await new Promise(r=>setTimeout(r,1500)); 
     nextQuestion(); 
   } else {
     endGame(); 
