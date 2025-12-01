@@ -1,5 +1,8 @@
 /* script.js
  - FIX：モバイル環境で2問目以降の出題音声が流れない問題に対応するため、回答判定後の待ち時間(1.5秒)を削除し、次の問題への遷移を高速化。
+ - 追加：ランキング機能（スコア保存・表示）とSNS連携機能（X直接シェア・Instagramストーリーズ共有）を追加。
+ - 修正：ボタンの幅統一のため、ランキング/SNSボタンをJSで動的に生成し、#postGameControlsコンテナに挿入するように変更。
+ - 修正：キーパッドの「クリア」ボタンの配置（HTML構造の復元）。
 */
 
 const SOUND_PATH = "sound/";
@@ -32,6 +35,10 @@ const INPUT_FILES = {
   "C": "input_clear.mp3" 
 };
 
+// --- ランキング定数 ---
+const RANKING_KEY = 'goldballSearchRanking'; 
+const MAX_RANKING_ENTRIES = 10; 
+
 // --- UI要素 ---
 const ruleBtn = document.getElementById("ruleBtn");
 const checkBtn = document.getElementById("checkBtn");
@@ -49,6 +56,11 @@ const retryBtn = document.getElementById("retryBtn");
 const scoreDisplay = document.getElementById("scoreDisplay");
 const a11yStatus = document.getElementById("a11yStatus"); 
 
+const postGameControls = document.getElementById("postGameControls"); 
+const rankingWrap = document.getElementById("rankingWrap");
+const rankingList = document.getElementById("rankingList");
+const closeRankingBtn = document.getElementById("closeRankingBtn"); 
+
 let audioMap = {}; 
 let currentAudio = null; 
 let isPlaying = false; 
@@ -57,6 +69,7 @@ let gameQueue = [];
 let questionIndex = 0;
 let playerInput = ""; 
 let score = 0;
+let startTime = 0; 
 const TOTAL_QUESTIONS = 3;
 
 // ----- I. 初期化とプリロード -----
@@ -159,7 +172,9 @@ function stopAll(){
 }
 
 function disableControlsDuringPlayback(disabled){
-  const controls = [ruleBtn, checkBtn, stopBtn, hintBtn, hintBellBtn, startBtn, retryBtn, ...document.querySelectorAll("#keypad button")];
+  const controls = [ruleBtn, checkBtn, stopBtn, hintBtn, hintBellBtn, startBtn, retryBtn, closeRankingBtn, 
+                    ...document.querySelectorAll("#postGameControls button"), 
+                    ...document.querySelectorAll("#keypad button")];
   controls.forEach(el=>{
     if (el && el.id !== 'stopBtn' && !el.closest('#keypad')) {
         el.disabled = disabled; 
@@ -189,6 +204,114 @@ function showKeypad(show){
   }
 }
 
+// ★ ランキング関連の関数 ★
+function getRankingData() {
+    try {
+        const data = localStorage.getItem(RANKING_KEY);
+        return data ? JSON.parse(data) : [];
+    } catch (e) {
+        console.error("Failed to read ranking data from localStorage", e);
+        return [];
+    }
+}
+
+function saveScoreToRanking(score, timeTaken) {
+    const ranking = getRankingData();
+    const now = new Date();
+    
+    const newEntry = {
+        score: score,
+        time: timeTaken, 
+        date: now.toLocaleString('ja-JP', { dateStyle: 'short', timeStyle: 'short' })
+    };
+    
+    ranking.push(newEntry);
+    
+    // ソート: スコアが高い順、同点の場合はタイムが短い順
+    ranking.sort((a, b) => {
+        if (b.score !== a.score) {
+            return b.score - a.score; 
+        }
+        return a.time - b.time;
+    });
+
+    if (ranking.length > MAX_RANKING_ENTRIES) {
+        ranking.length = MAX_RANKING_ENTRIES;
+    }
+    
+    try {
+        localStorage.setItem(RANKING_KEY, JSON.stringify(ranking));
+    } catch (e) {
+        console.error("Failed to write ranking data to localStorage", e);
+    }
+}
+
+function displayRanking(show) {
+    if (show) {
+        const data = getRankingData();
+        let html = '<table><thead><tr><th>順位</th><th>スコア</th><th>タイム</th><th>日付</th></tr></thead><tbody>';
+
+        if (data.length === 0) {
+            rankingList.innerHTML = '<p>まだスコアが保存されていません。ゲームをプレイしてランキングに挑戦しましょう！</p>';
+            retryWrap.style.display = 'none'; 
+            rankingWrap.style.display = 'block';
+            return;
+        }
+
+        data.forEach((entry, index) => {
+            const timeStr = entry.time ? `${entry.time}秒` : 'N/A';
+            html += `<tr>
+                        <td>${index + 1}</td>
+                        <td>${entry.score} / ${TOTAL_QUESTIONS}</td>
+                        <td>${timeStr}</td>
+                        <td>${entry.date}</td>
+                    </tr>`;
+        });
+
+        html += '</tbody></table>';
+        rankingList.innerHTML = html;
+        retryWrap.style.display = 'none'; 
+        rankingWrap.style.display = 'block';
+    } else {
+        rankingWrap.style.display = 'none';
+        if (questionIndex >= TOTAL_QUESTIONS) {
+             retryWrap.style.display = 'block'; 
+        }
+    }
+}
+
+function generateShareText(score, total, time) {
+    const timeStr = time ? ` (${time}秒)` : '';
+    // 共有テキストの作成
+    return `🎯 ゴールボールサーチゲームの結果を発表！\n\nスコア: ${score} / ${total}${timeStr}\n\n私も${score}点取れたよ！みんなも挑戦してみてね！\n#ゴールボールサーチゲーム #視覚障害者スポーツ #ゴールボール #KGBA\n`;
+}
+
+function shareToX(score, total, time) {
+    const text = generateShareText(score, total, time);
+    const encodedText = encodeURIComponent(text);
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodedText}`;
+    
+    window.open(twitterUrl, '_blank');
+}
+
+function shareToInstagram(score, total, time) {
+    const shareText = generateShareText(score, total, time).replace(/\n/g, ' '); 
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareText).then(() => {
+            alert("✅ 投稿用テキストがクリップボードにコピーされました！\n\n【次のステップ】\n1. Instagramが起動したら、ストーリーズ編集画面で指を長押ししてテキストをペーストしてください。\n2. スタンプ機能で「リンク」を選び、ゲームのURLを手動で追加してください。");
+            
+            window.open("instagram://story", '_blank');
+        }).catch(err => {
+            console.error('クリップボードへのコピーに失敗:', err);
+            alert("クリップボードへのコピーに失敗しました。以下のテキストを直接コピーしてください:\n\n" + shareText);
+        });
+    } else {
+         alert("お使いのブラウザではクリップボードへの自動コピーができません。以下のテキストを長押ししてコピーしてください:\n\n" + shareText);
+    }
+}
+
+
 // --- IV. ゲームフロー ---
 async function startGame(){
   if (isPlaying && playingButton === startBtn) {
@@ -201,9 +324,11 @@ async function startGame(){
   score = 0;
   questionIndex = 0;
   playerInput = "";
+  startTime = Date.now(); // タイム計測開始
   if(resultDiv) resultDiv.textContent = "";
   if(scoreDisplay) scoreDisplay.textContent = "";
   if(retryWrap) retryWrap.style.display = "none";
+  if(rankingWrap) rankingWrap.style.display = "none"; 
   if(a11yStatus) a11yStatus.textContent = "ゲームを開始します。";
 
   gameQueue = pick3Questions();
@@ -280,8 +405,6 @@ async function confirmAnswer(){
   disableControlsDuringPlayback(false); 
   
   if (questionIndex < TOTAL_QUESTIONS){
-    // ★ 修正: 回答判定後の待ち時間を削除し、すぐに次の問題再生へ
-    // await new Promise(r=>setTimeout(r,1500)); 
     nextQuestion(); 
   } else {
     endGame(); 
@@ -289,25 +412,52 @@ async function confirmAnswer(){
 }
 
 async function endGame(){
+  const timeTaken = Math.floor((Date.now() - startTime) / 1000); // 経過時間を計算
+  
   showKeypad(false);
   if(questionLabel) questionLabel.textContent = "ゲーム終了";
   if(resultDiv) resultDiv.textContent = "";
   
   disableControlsDuringPlayback(true);
   
+  // スコアとタイムをランキングに保存
+  saveScoreToRanking(score, timeTaken);
+  
   if (score >= 2) {
       if (audioMap[gameSuccessFile]) {
           await playAudioElement(gameSuccessFile, false, startBtn);
       }
-      if(a11yStatus) a11yStatus.textContent = `ゲーム終了。あなたのスコアは ${score} 点です。お見事！`;
+      if(a11yStatus) a11yStatus.textContent = `ゲーム終了。あなたのスコアは ${score} 点、タイムは ${timeTaken} 秒です。お見事！`;
   } else {
       if(a11yStatus) a11yStatus.textContent = `ゲーム終了。あなたのスコアは ${score} 点です。再挑戦ボタンで再び遊べます。`;
   }
   
   disableControlsDuringPlayback(false); 
   
-  if(scoreDisplay) scoreDisplay.textContent = `あなたのスコア： ${score} / ${TOTAL_QUESTIONS}`;
+  if(scoreDisplay) scoreDisplay.textContent = `あなたのスコア： ${score} / ${TOTAL_QUESTIONS} (タイム: ${timeTaken}秒)`;
   if(retryWrap) retryWrap.style.display = "block";
+  
+  // ランキングとSNSボタンを動的に生成・挿入
+  postGameControls.innerHTML = ''; // コンテナをクリア
+  
+  const createButton = (id, text, className) => {
+    const btn = document.createElement('button');
+    btn.id = id;
+    btn.textContent = text;
+    btn.className = className;
+    btn.type = 'button';
+    postGameControls.appendChild(btn);
+    return btn;
+  };
+  
+  const showRankingBtn = createButton('showRankingBtn', '🏆 ランキングを見る', 'show-ranking-btn');
+  const shareXBtn = createButton('shareXBtn', 'X (旧 Twitter) でシェア', 'social-share share-x');
+  const shareInstaBtn = createButton('shareInstaBtn', '📸 ストーリーズでシェア', 'social-share share-insta');
+  
+  // イベントリスナーを再設定
+  showRankingBtn.addEventListener("click", () => displayRanking(true));
+  shareXBtn.addEventListener("click", () => shareToX(score, TOTAL_QUESTIONS, timeTaken));
+  shareInstaBtn.addEventListener("click", () => shareToInstagram(score, TOTAL_QUESTIONS, timeTaken));
 }
 
 
@@ -344,6 +494,10 @@ stopBtn && stopBtn.addEventListener("click", () => {
 
 startBtn && startBtn.addEventListener("click", startGame);
 retryBtn && retryBtn.addEventListener("click", startGame);
+
+// ランキングを閉じるボタン
+closeRankingBtn && closeRankingBtn.addEventListener("click", () => displayRanking(false));
+
 
 // キーパッド入力処理
 document.querySelectorAll("#keypad .key, #keypad .confirm").forEach(btn=>{
