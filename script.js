@@ -15,7 +15,8 @@ const ANSWER_FILES = {
 };
 const seikaiFile = "seikai.mp3";
 const noFile = "no.mp3";
-const ruleFiles = ["zunda_rule001.mp3","zunda_rule002.mpuzunda_rule003.mp3","zunda_rule004.mp3","zunda_rule005.mp3"];
+// 修正後
+const ruleFiles = ["zunda_rule001.mp3", "zunda_rule002.mp3", "zunda_rule003.mp3", "zunda_rule004.mp3", "zunda_rule005.mp3"];
 const hintSeqFiles = ["hint_01.mp3","hint.mp3"];
 const hintBellFiles = ["hint.mp3"];
 const checkFile = "zunda_check.mp3";
