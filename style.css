@@ -21,192 +21,199 @@ header.top{display:flex;align-items:center;gap:12px;justify-content:center;margi
 h1{font-size:1.6rem;color:var(--accent);margin:0;}
 
 /* コントロールボタンセクション */
-.controls{display:flex;gap:var(--gap);justify-content:center;margin:12px 0;flex-wrap:wrap;}
-.controls button{
-    background:var(--high-contrast-bg);
-    color:var(--text);
-    border:2px solid var(--text);
-    padding:var(--button-padding);
-    border-radius:var(--btn-radius);
-    font-size:1rem;
-    min-width:160px;
-    width: calc(50% - (var(--gap) / 2)); 
-    max-width: 300px; 
-    box-sizing: border-box;
-    text-align: center;
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: var(--gap);
+    flex-wrap: wrap; /* ボタンが多いため折り返しを許可 */
 }
 
-.controls button:active{transform:translateY(1px)}
-.control-row-2 button { background-color: #333; }
-.control-row-3 button { border-color: var(--accent); }
+.controls button {
+    flex: 1; 
+    max-width: 250px;
+    padding: var(--button-padding);
+    border-radius: var(--btn-radius);
+    font-size: 1rem;
+    font-weight: bold;
+    border: 2px solid var(--text);
+    background: var(--high-contrast-bg);
+    color: var(--text);
+    cursor: pointer;
+    min-width: 160px;
+    box-sizing: border-box; /* padding/borderを含めたサイズ計算 */
+}
+/* 各行のボタンの背景色調整 */
+.control-row-1 button, .control-row-2 button { background-color: #333; }
+
+.controls button.accent {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    border-color: var(--accent);
+}
+
 #stopBtn{background:var(--danger);color:#fff;border-color:#fff;order: 2;} 
 #startBtn{background:var(--accent);color:var(--accent-contrast);border-color:var(--accent-contrast);order: 1;} 
-.controls button:disabled { opacity: 0.6; pointer-events: none; } 
-
 
 /* status */
-#status{margin:18px 0;text-align:center;padding:12px;background:var(--high-contrast-bg);border-radius:var(--btn-radius)} 
-#questionLabel{font-weight:700;margin-bottom:6px;color:var(--accent)}
-#currentInput{color:#0ff;margin-bottom:6px}
-#result{font-size:1.2rem;margin-top:6px}
+#status{text-align:center;padding:12px;margin-bottom:var(--gap);border:1px solid #333;border-radius:var(--btn-radius);background:var(--high-contrast-bg);}
+#questionLabel{font-size:1.2rem;font-weight:bold;color:var(--accent);}
+#currentInput{font-size:1rem;margin:4px 0;color: #0ff;}
+#result{font-size:1.2rem;font-weight:bold;color:var(--accent);min-height:20px;}
 
-/* ★ KEYPAD ★ */
-#keypadWrap{display:flex;justify-content:center;margin-top:8px}
-#keypad{
-    display:grid;
-    grid-template-columns:repeat(3, minmax(64px, 1fr)); 
-    grid-auto-rows:clamp(64px, 12vw, 80px); 
-    gap:10px;
-    align-items:center;
-    max-width:320px; 
+
+/* keypadWrap */
+#keypadWrap{display:flex;justify-content:center;margin:var(--gap) 0;}
+
+/* keypad: テンキーのデザインを修正 */
+#keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: clamp(64px, 12vw, 80px); /* ボタンの高さを調整 */
+    gap: 10px;
+    margin-top: var(--gap);
+    max-width: 320px; 
     width: 90%; 
-    margin: 0 auto;
-    background-color: var(--high-contrast-bg);
-    padding: 10px;
+}
+
+#keypad button {
+    padding: 8px;
+    font-size: 1.5rem;
     border-radius: var(--btn-radius);
+    background: var(--high-contrast-bg);
+    border: 2px solid #fff;
+    color: #fff;
 }
-#keypad button{font-size:1.4rem;padding:8px;border-radius:10px;background:#222;border:2px solid #fff;color:#fff}
 
-/* ★ 修正: 決定ボタン(full-width)にのみ、フル幅と専用スタイルを適用 ★ */
-#keypad button.confirm.full-width{ 
-    grid-column: 1 / span 3; /* フル幅に設定 */
-    background:var(--accent);
-    color:var(--accent-contrast);
-    font-size: 1.2rem;
-    padding: 16px 20px;
+/* 決定ボタンのスタイル */
+#keypad button.confirm {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    font-size: 1.1rem;
 }
-#keypad button[disabled]{opacity:0.5;pointer-events:none}
 
+/* クリアボタンのスタイル */
 #keypad button.clear {
   background: #555; 
   color: #fff;
   font-weight: bold;
 }
-/* ★ 修正: 前回のフル幅に関する不要なルールを削除（決定ボタンは上のconfirm.full-widthで制御） ★ */
 
+/* Cボタンをテンキーのフル幅に広げる */
+#keypad button.full-width {
+    grid-column: 1 / span 3; /* 1列目から3列目まで結合 */
+}
+
+#keypad button[disabled]{opacity:0.5;pointer-events:none}
 
 /* retry */
 #retryWrap{text-align:center;margin-top:18px}
-#retryBtn.accent{background:#00AEEF;color:#fff;border:2px solid #fff;padding:12px 24px;font-size:1.1rem;border-radius:12px; margin-bottom: 15px;}
+#retryBtn.accent{background:#00AEEF;color:#fff;border:2px solid #fff;padding:12px 24px;font-size:1.1rem;border-radius:12px}
 #scoreDisplay{font-size:1.4rem;margin-bottom:8px;color:var(--accent)}
 
 
-/* credits */
+/* --- ランキング機能 & SNSシェアボタンのスタイル --- */
+#postGameControls {
+    margin-top: 18px;
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px;
+    align-items: center; 
+}
+
+#postGameControls button {
+    width: 100%; 
+    max-width: 300px;
+    padding: var(--button-padding);
+    border-radius: var(--btn-radius);
+    font-size: 1rem;
+    font-weight: bold;
+    border: 2px solid #fff;
+    cursor: pointer;
+}
+
+#postGameControls .show-ranking-btn {
+    background: #00AEEF; 
+    color: #fff;
+}
+
+#postGameControls .social-share {
+    background: #444;
+    color: #fff;
+}
+
+/* --- ランキング表示エリア --- */
+#rankingWrap {
+    margin-top: 24px;
+    padding: 16px;
+    background: var(--high-contrast-bg);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+
+#rankingWrap h2 {
+    color: var(--accent);
+    margin-top: 0;
+}
+
+#rankingList table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 0.95rem;
+}
+
+#rankingList th, #rankingList td {
+    padding: 8px 4px;
+    border: 1px solid #333;
+    text-align: left;
+}
+
+#rankingList th {
+    background-color: #333;
+    color: var(--accent);
+    font-weight: normal;
+}
+
+#rankingWrap #closeRankingBtn {
+    margin-top: 15px;
+    padding: 8px 16px;
+    background: #777;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* credits: フッターのレイアウトを修正 */
 footer.credits{
   margin-top:32px;
   padding:12px;
   border-top:1px solid #333;
+  /* 縦並び・中央寄せに統一 */
   display:flex;
-  justify-content: center;
   flex-direction: column; 
   align-items: center;
-  gap:12px;
-  text-align: center; 
+  gap:8px; /* 縦方向の隙間を調整 */
+  text-align: center;
   font-size:0.8rem;
-  color:#aaa; 
+  line-height:1.5;
 }
-footer.credits a{color:var(--accent);text-decoration:underline}
-footer .monlogo img{height:24px; width: auto;} 
+footer.credits a{color:var(--accent);text-decoration:none}
+footer.credits a:hover{text-decoration:underline}
+.monlogo img{height:30px;vertical-align:middle;}
 
-
-/* --- ランキングとSNSボタンのスタイル (幅統一と改行防止) --- */
-
-#postGameControls {
-    display: flex;
-    flex-direction: column; 
-    gap: 10px;
-    margin-top: 15px;
-    width: 90%; 
-    max-width: 400px; 
-    margin-left: auto; 
-    margin-right: auto; 
-}
-
-#postGameControls button {
-    color: #fff !important;
-    font-weight: bold;
-    cursor: pointer;
-    transition: transform 0.2s;
-    padding: var(--button-padding);
-    border-radius: var(--btn-radius);
-    
-    width: 100%; 
-    box-sizing: border-box;
-    border: 2px solid #fff; 
-    
-    white-space: nowrap; 
-    font-size: 1.1rem; 
-    text-align: center; 
-}
-
-.show-ranking-btn {
-    background: #00AEEF; 
-}
-.share-x {
-    background-color: #000; 
-}
-.share-insta {
-    background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); 
-}
-
-/* ランキング表示エリアのスタイル */
-#rankingWrap {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: var(--high-contrast-bg); 
-    border-radius: var(--btn-radius);
-    color: var(--text); 
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    max-width: 400px; 
-    margin-left: auto;
-    margin-right: auto;
-}
-#rankingWrap h2 {
-    color: var(--accent); 
-    margin-top: 0;
-    font-size: 1.5rem;
-}
-#rankingList table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 15px 0;
-    font-size: 0.9rem;
-}
-#rankingList th, #rankingList td {
-    padding: 8px 5px;
-    border: 1px solid #333; 
-    text-align: center;
-    color: var(--text); 
-}
-#rankingList th {
-    background-color: #222; 
-    color: var(--accent); 
-}
-#closeRankingBtn {
-    background: #555; 
-    color: #fff;
-    border: 2px solid #fff;
-    font-size: 1.1rem;
-    padding: var(--button-padding);
-    border-radius: var(--btn-radius);
-    width: 100%; 
-    margin-top: 10px;
-}
 
 /* responsive: スマホでボタンを完全に縦並びにする */
 @media (max-width:520px){
+  /* コントロールボタンを縦並びにする */
+  .controls {flex-direction: column;gap: 0;margin: 6px 0;}
   .controls button{min-width: unset;width: 100%;margin-bottom: 8px;font-size:0.95rem; padding: 10px 15px;}
+  /* orderの指定をリセット */
   #stopBtn{ order: unset; }
   #startBtn{ order: unset; }
 
-  .controls {flex-direction: column;gap: 0;margin: 6px 0;}
-  
   #kgbalogo{height:38px}
-  footer .monlogo img{height:20px;}
-}
-/* スマホサイズの時に、SNSボタンの文字を更に小さくして改行を完全に防ぐ */
-@media (max-width:400px){
-    #postGameControls button, #closeRankingBtn {
-        font-size: 0.95rem; 
-    }
+  .monlogo img{height:20px;}
 }

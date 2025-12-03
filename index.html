@@ -51,28 +51,25 @@
         
         <button class="key" data-key="0" type="button">0</button>
         <button class="key" data-key="." type="button">.</button>
-        <button class="key clear" data-key="C" type="button">クリア</button>
-        
-        <button class="confirm full-width" data-key="Enter" type="button">決定</button> 
-        
+        <button class="confirm" data-key="Enter" type="button">決定</button>
+
+        <button class="key clear full-width" data-key="C" type="button">C</button>
       </div>
     </section>
 
+    <div id="postGameControls">
+      </div>
+    
     <section id="retryWrap" style="display:none;" aria-hidden="true" role="region" aria-label="再挑戦">
       <div id="scoreDisplay" aria-live="polite"></div>
       <button id="retryBtn" class="accent" aria-label="再挑戦" type="button">再挑戦</button>
-      
-      <div id="postGameControls">
-        </div>
-      
     </section>
     
-    <section id="rankingWrap" style="display:none;" aria-hidden="true" role="region" aria-label="ランキング">
-        <h2>🏆 ランキング (トップ10)</h2>
-        <div id="rankingList">
-            <p>スコアが保存されていません。</p>
+    <section id="rankingWrap" style="display:none;" aria-hidden="true" role="region" aria-label="グローバルランキング">
+      <h2>🏆 グローバルランキング</h2>
+      <div id="rankingList">
         </div>
-        <button id="closeRankingBtn" type="button">ランキングを閉じる</button>
+      <button id="closeRankingBtn" type="button">閉じる</button>
     </section>
     
     <div id="a11yStatus" class="sr-only" aria-live="assertive"></div>
@@ -80,12 +77,11 @@
   </main>
 
   <footer class="credits" role="contentinfo">
-    <div>
+    <div class="footer-content">
       © ゴールボールサーチゲームプロジェクト<br />
       企画・制作：KGBA ＆ <a id="monLink" href="https://sites.google.com/view/kgba-tochigi/" target="_blank"
         rel="noopener noreferrer">MON☆Stars</a><br />
       無断転載・複製・改変を禁じます<br />
-
       VOICEVOX: ずんだもん
     </div>
     <div class="monlogo">
@@ -93,7 +89,6 @@
         <img src="monlogo.png" alt="MON☆Stars ロゴ" />
       </a>
     </div>
-    
   </footer>
 
   <script src="script.js" defer></script>
