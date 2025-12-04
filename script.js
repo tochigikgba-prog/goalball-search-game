@@ -32,8 +32,8 @@ const INPUT_FILES = {
 };
 
 // --- ランキング定数 ---
-// ★★★ 最終修正：新しいデプロイURLをここに設定（権限付き） ★★★
-const API_ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbw5T0gcDoUyjGob5_KjBzZe7dHbEbtnB_XtAQt0ZnJYp9PLsF7WJtkr4gMr4nEKUxYooQ/exec';
+// ★★★ 最終決定：最新のデプロイURLをここに設定済み ★★★
+const API_ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbzKquAQxvY-KiQ9YksC2k8nP8YGBh2WpXk7tYCcR6_seuHcRTLVYHu8MgKziOiUzmAA/exec';
 
 // --- UI要素 ---
 const ruleBtn = document.getElementById("ruleBtn");
