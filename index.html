@@ -1,291 +1,119 @@
-/* script_v2.js */
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ゴールボールサーチゲーム</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-const SOUND_PATH = "sound/";
+<main>
+    <header class="top">
+      <a href="https://goalball-kanagawa.org/" target="_blank" rel="noopener noreferrer">
+        <img id="kgbalogo" src="kgbalogo.png" alt="KGBAロゴ" />
+      </a>
+      <h1>ゴールボールサーチゲーム</h1>
+    </header>
+</main>
 
-// --- 音声ファイル一覧（名前はexact） ---
-const QUIZ_FILES = {
-  "0":"quiz_0.mp3", "1":"quiz_1.mp3", "2":"quiz_2.mp3", "3":"quiz_3.mp3", 
-  "4":"quiz_4.mp3", "4.5":"quiz_45.mp3", "5":"quiz_5.mp3", "6":"quiz_6.mp3", 
-  "7":"quiz_7.mp3", "8":"quiz_8.mp3", "9":"quiz_9.mp3"
-};
-const ANSWER_FILES = {
-  "0":"answer_0.mp3","1":"answer_1.mp3","2":"answer_2.mp3","3":"answer_3.mp3",
-  "4":"answer_4.mp3","4.5":"answer_45.mp3","5":"answer_5.mp3","6":"answer_6.mp3",
-  "7":"answer_7.mp3","8":"answer_8.mp3","9":"answer_9.mp3"
-};
-const seikaiFile = "seikai.mp3";
-const noFile = "no.mp3";
-// 修正後
-const ruleFiles = ["zunda_rule001.mp3", "zunda_rule002.mp3", "zunda_rule003.mp3", "zunda_rule004.mp3", "zunda_rule005.mp3"];
-const hintSeqFiles = ["hint_01.mp3","hint.mp3"];
-const hintBellFiles = ["hint.mp3"];
-const checkFile = "zunda_check.mp3";
-const enterSound = "enter.mp3";
-const gameSuccessFile = "game_success.mp3"; 
+    <section class="controls control-row-1" aria-label="情報確認" role="region">
+      <button id="ruleBtn" aria-label="ルール" type="button">ルール</button>
+      <button id="checkBtn" aria-label="イヤホンの左右の確認" type="button">イヤホンの左右の確認</button>
+    </section>
 
-// 入力数字の音声ファイルマップ
-const INPUT_FILES = {
-  "0": "input_0.mp3", "1": "input_1.mp3", "2": "input_2.mp3", "3": "input_3.mp3",
-  "4": "input_4.mp3", "5": "input_5.mp3", "6": "input_6.mp3", "7": "input_7.mp3",
-  "8": "input_8.mp3", "9": "input_9.mp3", ".": "input_dot.mp3",
-  "C": "input_clear.mp3" 
-};
+    <section class="controls control-row-2" aria-label="ヒント" role="region">
+      <button id="hintBtn" aria-label="ヒント" type="button">ヒント</button>
+      <button id="hintBellBtn" aria-label="ヒント 鈴のみ" aria-pressed="false" type="button">ヒント／鈴のみ</button>
+    </section>
 
-// --- ランキング定数（Firebase用） ---
-// GASのAPI_ENDPOINT_URLは削除されています
-const RANKING_COLLECTION_NAME = 'ranking'; 
+    <section class="controls control-row-3" aria-label="ゲーム操作" role="region">
+      <button id="startBtn" class="accent" aria-label="スタート" aria-controls="keypadWrap" aria-expanded="false" type="button">スタート</button>
+      <button id="stopBtn" aria-label="再生停止" type="button">再生停止</button>
+    </section>
 
-// --- UI要素 ---
-const ruleBtn = document.getElementById("ruleBtn");
-const checkBtn = document.getElementById("checkBtn");
-const stopBtn = document.getElementById("stopBtn");
-const hintBtn = document.getElementById("hintBtn");
-const hintBellBtn = document.getElementById("hintBellBtn");
-const startBtn = document.getElementById("startBtn");
-const keypad = document.getElementById("keypad");
-const keypadWrap = document.getElementById("keypadWrap");
-const currentInput = document.getElementById("currentInput");
-const questionLabel = document.getElementById("questionLabel");
-const resultDiv = document.getElementById("result");
-const retryWrap = document.getElementById("retryWrap");
-const retryBtn = document.getElementById("retryBtn");
-const scoreDisplay = document.getElementById("scoreDisplay");
-const a11yStatus = document.getElementById("a11yStatus"); 
+    <section id="status" role="status" aria-live="polite">
+      <div id="questionLabel">ようこそ！スタートボタンを押して下さい。</div>
+      <div id="currentInput">あなたの回答：なし</div>
+      <div id="result"></div>
+    </section>
 
-// ランキング関連のUI要素
-const postGameControls = document.getElementById("postGameControls"); 
-const rankingWrap = document.getElementById("rankingWrap");
-const rankingList = document.getElementById("rankingList");
-const closeRankingBtn = document.getElementById("closeRankingBtn"); 
+    <section id="keypadWrap" aria-label="数字入力" role="region" style="display:none;">
+      <div id="keypad" role="group" aria-label="数字入力パッド">
+        <button class="key" data-key="7" type="button">7</button>
+        <button class="key" data-key="8" type="button">8</button>
+        <button class="key" data-key="9" type="button">9</button>
+        
+        <button class="key" data-key="4" type="button">4</button>
+        <button class="key" data-key="5" type="button">5</button>
+        <button class="key" data-key="6" type="button">6</button>
+        
+        <button class="key" data-key="1" type="button">1</button>
+        <button class="key" data-key="2" type="button">2</button>
+        <button class="key" data-key="3" type="button">3</button>
+        
+        <button class="key" data-key="0" type="button">0</button>
+        <button class="key" data-key="." type="button">.</button>
+        <button class="confirm" data-key="Enter" type="button">決定</button>
 
+        <button class="key clear full-width" data-key="C" type="button">C</button>
+      </div>
+    </section>
 
-let audioMap = {}; 
-let currentAudio = null; 
-let isPlaying = false; 
-let playingButton = null;
-let gameQueue = []; 
-let questionIndex = 0;
-let playerInput = ""; 
-let score = 0;
-let startTime = 0; // タイム計測用の変数
-const TOTAL_QUESTIONS = 3;
-
-// ----- I. 初期化とプリロード -----
-function preload(filename){
-  const path = SOUND_PATH + filename;
-  const a = new Audio(path);
-  a.preload = "auto";
-  audioMap[filename] = a;
-}
-
-function preloadAll(){
-  Object.values(QUIZ_FILES).forEach(preload);
-  Object.values(ANSWER_FILES).forEach(preload);
-  [seikaiFile,noFile,enterSound,checkFile,gameSuccessFile].forEach(f=>preload(f)); 
-  ruleFiles.forEach(preload);
-  hintSeqFiles.forEach(preload);
-  hintBellFiles.forEach(preload);
-  Object.values(INPUT_FILES).forEach(preload); 
-}
-preloadAll();
-
-// ----- II. 再生ユーティリティ -----
-function playAudioElement(filename, isInput = false, buttonElement = null){
-  return new Promise((resolve, reject) => {
-    if (!filename) { resolve(); return; }
+    <div id="postGameControls" style="display:none;">
+      </div>
     
-    if (!isInput && isPlaying) {
-        stopAll(); 
-    } 
+    <section id="retryWrap" style="display:none;" aria-hidden="true" role="region" aria-label="再挑戦">
+      <div id="scoreDisplay" aria-live="polite"></div>
+      <button id="retryBtn" class="accent" aria-label="再挑戦" type="button">再挑戦</button>
+    </section>
     
-    let a;
-    if (audioMap[filename]) {
-      try { a = audioMap[filename].cloneNode(true); } catch (e) { a = new Audio(SOUND_PATH + filename); }
-    } else {
-      a = new Audio(SOUND_PATH + filename);
-    }
-    a.preload = "auto";
+    <section id="rankingWrap" style="display:none;" aria-hidden="true" role="region" aria-label="グローバルランキング">
+      <h2>🏆 グローバルランキング</h2>
+      <div id="rankingList">
+        </div>
+      <button id="closeRankingBtn" type="button">閉じる</button>
+    </section>
     
-    try { a.pause(); a.currentTime = 0; } catch(e){}
+    <div id="a11yStatus" class="sr-only" aria-live="assertive"></div>
     
-    if (!isInput) {
-        currentAudio = a;
-        isPlaying = true;
-        playingButton = buttonElement;
-    }
-    
-    const onEnded = () => {
-      a.removeEventListener("ended", onEnded);
-      a.removeEventListener("error", onErr);
-      if (currentAudio === a) {
-          currentAudio = null;
-          isPlaying = false;
-          playingButton = null;
-      }
-      resolve();
-    };
-    const onErr = (ev) => {
-      a.removeEventListener("error", onErr);
-      a.removeEventListener("ended", onEnded);
-      if (currentAudio === a) {
-          currentAudio = null;
-          isPlaying = false;
-          playingButton = null;
-      }
-      console.error("audio error", filename, ev);
-      resolve(); 
-    };
-    
-    a.addEventListener("ended", onEnded);
-    a.addEventListener("error", onErr);
-    
-    a.play().then(() => {
-    }).catch(err => {
-      onErr(err); 
-    });
-  });
-}
+  </main>
 
-async function playSequence(files, gap = 500, buttonElement = null){
-  stopAll(); 
-  
-  for (const f of files){
-    if (stopRequested) break;
-    await playAudioElement(f, false, buttonElement);
-    if (gap > 0 && !stopRequested){
-      await new Promise(r => setTimeout(r, gap));
-    }
-  }
-}
+  <footer class="credits" role="contentinfo">
+   <div class="footer-content">
+      © ゴールボールサーチゲームプロジェクト<br />
+      企画・制作：<a href="https://goalball-kanagawa.org/" target="_blank" rel="noopener noreferrer">KGBA</a> ＆ <a id="monLink" href="https://sites.google.com/view/kgba-tochigi/" target="_blank"
+        rel="noopener noreferrer">MON☆Stars</a><br />
+      無断転載・複製・改変を禁じます<br />
+      VOICEVOX: ずんだもん
+    </div>
+    <div class="monlogo">
+      <a href="https://sites.google.com/view/kgba-tochigi/" target="_blank" rel="noopener noreferrer">
+        <img src="monlogo.png" alt="MON☆Stars ロゴ" />
+      </a>
+    </div>
+  </footer>
 
-let stopRequested = false;
-function stopAll(){
-  stopRequested = true;
-  if (currentAudio){
-    try { currentAudio.pause(); currentAudio.currentTime = 0; } catch(e){}
-  }
-  isPlaying = false;
-  playingButton = null; 
-  stopRequested = false; 
-}
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
-function disableControlsDuringPlayback(disabled){
-  const controls = [ruleBtn, checkBtn, stopBtn, hintBtn, hintBellBtn, startBtn, retryBtn, closeRankingBtn, 
-                     ...document.querySelectorAll("#postGameControls button"), 
-                     ...document.querySelectorAll("#keypad button")];
-  controls.forEach(el=>{
-    if (el && el.id !== 'stopBtn' && !el.closest('#keypad')) {
-        el.disabled = disabled; 
-    }
-  });
-}
-
-// --- III. ゲームフローヘルパー ---
-function pick3Questions(){
-  const keys = Object.keys(QUIZ_FILES); 
-  let picks;
-  do {
-    picks = [keys[Math.floor(Math.random()*keys.length)],
-             keys[Math.floor(Math.random()*keys.length)],
-             keys[Math.floor(Math.random()*keys.length)]];
-  } while (picks[0] === picks[1] && picks[1] === picks[2]);
-  return picks;
-}
-
-function showKeypad(show){
-  if(keypad) {
-      keypad.setAttribute("aria-hidden", show ? "false" : "true");
-  }
-  if(keypadWrap) {
-    keypadWrap.style.display = show ? "flex" : "none"; 
-    if(startBtn) startBtn.setAttribute("aria-expanded", show ? "true" : "false");
-  }
-}
-
-// ★ ランキング関連の関数 (Firebase Firestore対応) ★
-
-async function getRankingData() {
-    // db オブジェクトは index.html で定義されている
-    if (typeof db === 'undefined') {
-        console.error("Firebase Firestore (db) が初期化されていません。index.html の設定を確認してください。");
-        return [];
-    }
-    
-    try {
-        // Firestoreの 'ranking' コレクションからデータを取得
-        const snapshot = await db.collection(RANKING_COLLECTION_NAME)
-            .orderBy('score', 'desc') // スコアが高い順
-            .orderBy('time', 'asc')   // タイムが短い順
-            .limit(100) // 上位100件
-            .get();
-        
-        const data = [];
-        snapshot.forEach(doc => {
-            const entry = doc.data();
-            data.push({
-                score: entry.score,
-                time: entry.time,
-                name: entry.name,
-                timestamp: entry.timestamp 
-            });
-        });
-
-        return data; 
-    } catch (e) {
-        console.error("Failed to read ranking data from Firestore", e);
-        return [];
-    }
-}
-
-async function saveScoreToRanking(score, timeTaken) {
-    if (typeof db === 'undefined') {
-        alert("ランキングの登録に失敗しました。\n\n【原因】\nFirebase Firestore (db) が初期化されていません。index.html の設定を確認してください。");
-        return;
-    }
-
-    let playerName = prompt("グローバルランキングに登録します。\nお名前（匿名可）を入力してください。", "匿名");
-    
-    if (playerName === null) {
-        return; 
-    }
-    playerName = playerName.trim() === "" ? "匿名" : playerName.trim();
-    
-    const newEntry = {
-        score: score,
-        time: timeTaken, 
-        name: playerName,
-        // ランキングのソートに使うため、タイムスタンプを保存
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+<script>
+    // ★★★ あなたの firebaseConfig の値 ★★★
+    const firebaseConfig = {
+      apiKey: "AIzaSyDwBUd2D1Mt8HlZbh9Mvpi95JP6P0F7S7E",
+      authDomain: "gsranking.firebaseapp.com",
+      projectId: "gsranking",
+      storageBucket: "gsranking.firebasestorage.app",
+      messagingSenderId: "876090875752",
+      appId: "1:876090875752:web:7841b486506842230ec0dd",
+      measurementId: "G-M1Y9F13D2E"
     };
-    
-    try {
-        // Firestoreの 'ranking' コレクションにデータを追加
-        await db.collection(RANKING_COLLECTION_NAME).add(newEntry);
 
-        console.log("Score saved successfully to Firebase Firestore.");
-    } catch (e) {
-        console.error("Failed to write score to Firestore", e);
-        alert("ランキングの登録に失敗しました。\n\n【原因の可能性】\n1. index.html の firebaseConfig が間違っている\n2. Firestoreのセキュリティルールが正しく設定されていない（公開済みか）\n\n設定を確認してから再度お試しください。");
-    }
-}
+    // Firebaseの初期化（この app と db オブジェクトを script.js から使います）
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore(); 
+</script>
 
-async function displayRanking(show) {
-    if (show) {
-        if (retryWrap) retryWrap.style.display = 'none'; 
-        if (postGameControls) postGameControls.style.display = 'none'; 
-        
-        rankingWrap.style.display = 'block';
-        rankingList.innerHTML = '<p>ランキングデータを読み込み中...</p>';
-        disableControlsDuringPlayback(true); 
-        
-        const data = await getRankingData(); 
-        let html = '';
-
-        if (data.length === 0) {
-            rankingList.innerHTML = '<p>ランキングデータの取得に失敗しました。Firebaseの設定（特にルール）を確認してください。</p>';
-        } else {
-             html = '<table><thead><tr><th>順位</th><th>プレイヤー</th><th>スコア</th><th>タイム</th></tr></thead><tbody>';
-             data.forEach((entry, index) => {
-                const timeStr = entry.time ? `${entry.time}秒` : 'N/A';
-                const playerName = entry.name || '匿名';
-                html += `<tr>
+ <script src="script_v2.js" defer></script>
+</body>
+</html>
