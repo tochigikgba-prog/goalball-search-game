@@ -33,7 +33,7 @@ const INPUT_FILES = {
 
 // --- ランキング定数 ---
 // ★★★ あなたの最新のウェブアプリのURL（デプロイ後に発行されたもの）★★★
-const API_ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbyggRB09Fh2u8ro2a07q1VohC7TrZLuOya6yLGmbGMr6SUSl6T2F6hiNyAQ3L25spjy/exec';
+const API_ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbxkQNV6COEo7ricaRniPwSTkBLn6vXtvRN5BmAwMNMjCRJxLXZ4bpSeVzX7DRaDtefh/exec';
 
 // --- UI要素 ---
 const ruleBtn = document.getElementById("ruleBtn");
