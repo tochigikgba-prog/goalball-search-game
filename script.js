@@ -33,7 +33,7 @@ const INPUT_FILES = {
 
 // --- ランキング定数 ---
 // ★★★ 最終修正：新しいデプロイURLをここに設定（権限付き） ★★★
-const API_ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbxsUQ2oHOfRJ3K0SGWnOThWH8JMw28oMrIywOflaZz0-y0XpliIGiOqIBtKiO9ddNkMEw/exec';
+const API_ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbw5T0gcDoUyjGob5_KjBzZe7dHbEbtnB_XtAQt0ZnJYp9PLsF7WJtkr4gMr4nEKUxYooQ/exec';
 
 // --- UI要素 ---
 const ruleBtn = document.getElementById("ruleBtn");
@@ -171,8 +171,8 @@ function stopAll(){
 
 function disableControlsDuringPlayback(disabled){
   const controls = [ruleBtn, checkBtn, stopBtn, hintBtn, hintBellBtn, startBtn, retryBtn, closeRankingBtn, 
-            ...document.querySelectorAll("#postGameControls button"), 
-            ...document.querySelectorAll("#keypad button")];
+                     ...document.querySelectorAll("#postGameControls button"), 
+                     ...document.querySelectorAll("#keypad button")];
   controls.forEach(el=>{
     if (el && el.id !== 'stopBtn' && !el.closest('#keypad')) {
         el.disabled = disabled; 
@@ -210,7 +210,6 @@ async function getRankingData() {
         return [];
     }
 
-    // 読み込み（GET）はfetchで問題ないため、このまま
     try {
         const response = await fetch(API_ENDPOINT_URL, {
             method: 'GET',
@@ -248,37 +247,24 @@ async function saveScoreToRanking(score, timeTaken) {
         name: playerName
     };
     
-    // ★★★ 修正箇所: fetchからXMLHttpRequest (XHR) に変更 ★★★
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', API_ENDPOINT_URL, true); // true = 非同期
-        xhr.setRequestHeader('Content-Type', 'application/json');
+    try {
+        const response = await fetch(API_ENDPOINT_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newEntry)
+        });
 
-        xhr.onload = function() {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                console.log("Score saved successfully to global ranking via XHR.");
-                resolve();
-            } else {
-                console.error(`HTTP error! status: ${xhr.status}`, xhr.responseText);
-                reject(new Error(`HTTP error! status: ${xhr.status}`));
-            }
-        };
-
-        xhr.onerror = function() {
-            console.error("XHR failed to connect or process the request.");
-            reject(new Error("Failed to connect to ranking server."));
-        };
-
-        try {
-            xhr.send(JSON.stringify(newEntry));
-        } catch(e) {
-            reject(e);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    }).catch(e => {
+        console.log("Score saved successfully to global ranking.");
+    } catch (e) {
         console.error("Failed to write score to global ranking server", e);
         alert("ランキングの登録に失敗しました。\n\n【原因の可能性】\n1. Google Apps ScriptのURLが間違っている\n2. GASの公開設定（アクセスできるユーザー）が『全員』になっていない\n\n設定を確認してから再度お試しください。");
-    });
-    // ★★★ 修正箇所終わり ★★★
+    }
 }
 
 async function displayRanking(show) {
@@ -306,9 +292,9 @@ async function displayRanking(show) {
                             <td>${entry.score} / ${TOTAL_QUESTIONS}</td>
                             <td>${timeStr}</td>
                         </tr>`;
-             });
-             html += '</tbody></table>';
-             rankingList.innerHTML = html;
+            });
+            html += '</tbody></table>';
+            rankingList.innerHTML = html;
         }
         disableControlsDuringPlayback(false); 
         
@@ -316,8 +302,8 @@ async function displayRanking(show) {
         rankingWrap.style.display = 'none';
         
         if (questionIndex >= TOTAL_QUESTIONS) {
-             if (retryWrap) retryWrap.style.display = 'block'; 
-             if (postGameControls) postGameControls.style.display = 'flex'; 
+              if (retryWrap) retryWrap.style.display = 'block'; 
+              if (postGameControls) postGameControls.style.display = 'flex'; 
         }
     }
 }
@@ -441,7 +427,7 @@ async function confirmAnswer(){
     await playAudioElement(noFile, false, startBtn);
     const ansFile = ANSWER_FILES[b] || QUIZ_FILES[b];
     if (ansFile) {
-      await playAudioElement(ansFile, false, startBtn);
+        await playAudioElement(ansFile, false, startBtn);
     }
   }
   
