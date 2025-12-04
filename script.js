@@ -32,7 +32,7 @@ const INPUT_FILES = {
 };
 
 // --- ランキング定数 ---
-// ★★★ あなたの最新のウェブアプリのURL（デプロイ後に発行されたもの）★★★
+// ★★★ 最終修正：新しいデプロイURLをここに設定（権限付き） ★★★
 const API_ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbxsUQ2oHOfRJ3K0SGWnOThWH8JMw28oMrIywOflaZz0-y0XpliIGiOqIBtKiO9ddNkMEw/exec';
 
 // --- UI要素 ---
@@ -171,8 +171,8 @@ function stopAll(){
 
 function disableControlsDuringPlayback(disabled){
   const controls = [ruleBtn, checkBtn, stopBtn, hintBtn, hintBellBtn, startBtn, retryBtn, closeRankingBtn, 
-                     ...document.querySelectorAll("#postGameControls button"), 
-                     ...document.querySelectorAll("#keypad button")];
+            ...document.querySelectorAll("#postGameControls button"), 
+            ...document.querySelectorAll("#keypad button")];
   controls.forEach(el=>{
     if (el && el.id !== 'stopBtn' && !el.closest('#keypad')) {
         el.disabled = disabled; 
@@ -306,9 +306,9 @@ async function displayRanking(show) {
                             <td>${entry.score} / ${TOTAL_QUESTIONS}</td>
                             <td>${timeStr}</td>
                         </tr>`;
-            });
-            html += '</tbody></table>';
-            rankingList.innerHTML = html;
+             });
+             html += '</tbody></table>';
+             rankingList.innerHTML = html;
         }
         disableControlsDuringPlayback(false); 
         
@@ -316,8 +316,8 @@ async function displayRanking(show) {
         rankingWrap.style.display = 'none';
         
         if (questionIndex >= TOTAL_QUESTIONS) {
-              if (retryWrap) retryWrap.style.display = 'block'; 
-              if (postGameControls) postGameControls.style.display = 'flex'; 
+             if (retryWrap) retryWrap.style.display = 'block'; 
+             if (postGameControls) postGameControls.style.display = 'flex'; 
         }
     }
 }
@@ -441,7 +441,7 @@ async function confirmAnswer(){
     await playAudioElement(noFile, false, startBtn);
     const ansFile = ANSWER_FILES[b] || QUIZ_FILES[b];
     if (ansFile) {
-        await playAudioElement(ansFile, false, startBtn);
+      await playAudioElement(ansFile, false, startBtn);
     }
   }
   
