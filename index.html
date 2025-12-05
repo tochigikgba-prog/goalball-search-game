@@ -1,941 +1,119 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ゴールボールサーチゲーム</title>
-    <!-- Tailwind CSS CDN (レスポンシブデザインと統一感のために使用) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* カスタムスタイル */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f9fc;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            min-height: 100vh;
-            padding: 1rem;
-            color: #1f2937;
-        }
-
-        #mainGame {
-            width: 100%;
-            max-width: 500px;
-            padding: 1.5rem;
-            background: #ffffff;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            border-radius: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .top {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 0.75rem;
-        }
-
-        #kgbalogo {
-            border-radius: 0.5rem;
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #1d4ed8;
-        }
-
-        .question-display {
-            background-color: #e0f2fe;
-            color: #0369a1;
-            padding: 1rem;
-            border-radius: 0.75rem;
-            text-align: center;
-            font-size: 1.125rem;
-            font-weight: 600;
-        }
-
-        .result-area {
-            text-align: center;
-        }
-
-        .input-display {
-            font-size: 3rem;
-            font-weight: 900;
-            color: #ef4444;
-            min-height: 3.5rem;
-        }
-
-        .message {
-            min-height: 1.5rem;
-            font-weight: 500;
-            color: #10b981; /* Default success color */
-        }
-
-        #keypadWrap {
-            padding: 1rem 0;
-            background: #f1f5f9;
-            border-radius: 0.75rem;
-        }
-
-        #keypad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr) 1.5fr; /* 4列目を「確 定」ボタン用に追加 */
-            gap: 0.5rem;
-            padding: 0 1rem;
-        }
-
-        .key, .confirm, #startBtn, #retryBtn, #nameSubmitBtn, footer button {
-            padding: 0.75rem 0.5rem;
-            font-size: 1.25rem;
-            font-weight: bold;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.1s ease-in-out;
-            box-shadow: 0 3px #6b7280;
-            background-color: #e5e7eb;
-            color: #1f2937;
-            border: none;
-        }
-
-        .key:active, .confirm:active, #startBtn:active, #retryBtn:active, #nameSubmitBtn:active, footer button:active {
-            transform: translateY(3px);
-            box-shadow: none;
-        }
-
-        .confirm {
-            grid-column: 4 / 5; /* 4列目に配置 */
-            grid-row: 1 / 5; /* 1行目から4行目までを占有 */
-            background-color: #22c55e;
-            color: white;
-            box-shadow: 0 3px #15803d;
-        }
-        .confirm:active {
-            box-shadow: none;
-            background-color: #16a34a;
-        }
-        
-        .clear {
-            background-color: #fca5a5;
-            box-shadow: 0 3px #ef4444;
-        }
-        .clear:active {
-            box-shadow: none;
-            background-color: #f87171;
-        }
-
-        .accent, #startBtn, #retryBtn {
-            background-color: #3b82f6;
-            color: white;
-            box-shadow: 0 3px #2563eb;
-        }
-        .accent:active, #startBtn:active, #retryBtn:active {
-            box-shadow: none;
-            background-color: #1d4ed8;
-        }
-
-        .control-container {
-            width: 100%;
-            max-width: 500px;
-            display: flex;
-            justify-content: center;
-            margin-top: 1rem;
-        }
-        .control-container button {
-            width: 100%;
-        }
-
-        footer {
-            width: 100%;
-            max-width: 500px;
-            margin-top: 1rem;
-            padding: 1rem;
-            background: #ffffff;
-            border-radius: 1rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
-        .controls {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-        .controls button {
-            flex-grow: 1;
-            font-size: 0.875rem;
-            padding: 0.5rem;
-            box-shadow: 0 2px #9ca3af;
-        }
-
-        /* モーダル */
-        .ranking-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .ranking-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            max-width: 90%;
-            max-height: 90%;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        #rankingList, .rule-content-area {
-            margin-top: 1rem;
-            font-size: 1rem;
-            line-height: 1.6;
-        }
-        
-        #rankingList div {
-            padding: 0.5rem 0;
-            border-bottom: 1px dashed #e5e7eb;
-        }
-        #rankingList div:last-child {
-            border-bottom: none;
-        }
-        .rank-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .rank-score {
-            font-weight: bold;
-            color: #ef4444;
-        }
-
-        #closeRankingBtn, #closeRuleBtn {
-            margin-top: 1.5rem;
-            background-color: #9ca3af;
-            color: white;
-            width: 100%;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-        }
-
-        .name-form {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.75rem;
-        }
-        #nameInput {
-            flex-grow: 1;
-            padding: 0.5rem;
-            border: 2px solid #d1d5db;
-            border-radius: 0.5rem;
-        }
-        #scoreDisplay {
-            margin-top: 1rem;
-            font-size: 1.25rem;
-            font-weight: bold;
-            color: #1d4ed8;
-            text-align: center;
-        }
-        
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border-width: 0;
-        }
-
-        .rule-tip {
-            font-size: 0.9rem;
-            color: #4b5563;
-            margin-top: 1rem;
-            padding: 0.5rem;
-            background-color: #f3f4f6;
-            border-radius: 0.5rem;
-            text-align: center;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ゴールボールサーチゲーム</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<main id="mainGame" role="main">
-    <header class="top">
-        <!-- ロゴ画像はプレースホルダーURLを使用 -->
-        <a href="https://goalball-kanagawa.org/" target="_blank" rel="noopener noreferrer">
-            <!-- プレースホルダー画像: 50x50の青い円、テキスト「KGBA」 -->
-            <img id="kgbalogo" src="https://placehold.co/50x50/0077b6/ffffff?text=KGBA" alt="KGBAロゴ" />
-        </a>
-        <h1>ゴールボールサーチゲーム</h1>
-    </header>
-
-    <!-- 問題表示エリア -->
-    <div id="currentQ" class="question-display" aria-live="polite">イヤホンを装着し、スタートを押してね！</div>
-
-    <!-- 回答入力とメッセージ表示エリア -->
-    <section id="resultArea" class="result-area" role="status" aria-label="回答入力エリア">
-        <div id="inputDisplay" class="input-display" aria-live="polite">0.0</div>
-        <div id="message" class="message" aria-live="polite"></div>
-    </section>
-
-    <!-- テンキーエリア (ゲーム中は表示) -->
-    <section id="keypadWrap" role="application" aria-label="テンキー" style="display:none;" aria-hidden="true">
-        <div id="keypad">
-            <!-- テンキーのボタン (HTMLは元の通り) -->
-            <button class="key" data-key="7" type="button">7</button>
-            <button class="key" data-key="8" type="button">8</button>
-            <button class="key" data-key="9" type="button">9</button>
-            
-            <button class="key" data-key="4" type="button">4</button>
-            <button class="key" data-key="5" type="button">5</button>
-            <button class="key" data-key="6" type="button">6</button>
-
-            <button class="key" data-key="1" type="button">1</button>
-            <button class="key" data-key="2" type="button">2</button>
-            <button class="key" data-key="3" type="button">3</button>
-
-            <button class="key clear" data-key="C" type="button">C</button>
-            <button class="key" data-key="0" type="button">0</button>
-            <button class="key" data-key="." type="button">.</button>
-
-            <!-- 確定ボタン -->
-            <button class="confirm" data-key="ENTER" type="button">確 定</button>
-        </div>
-    </section>
-    
-    <!-- 名前入力エリア (ゲーム終了時に表示) -->
-    <section id="nameInputWrap" class="name-input-area" style="display:none;" aria-hidden="true" role="form" aria-labelledby="name-input-title">
-        <h2 id="name-input-title" class="text-xl font-bold text-center">ランキング登録</h2>
-        <p class="name-prompt text-center mt-2">ゲーム終了です！スコアを登録しましょう。</p>
-        <div id="scoreDisplay" aria-live="polite" class="text-2xl font-extrabold text-red-600 my-4 text-center"></div> 
-        <div class="name-form">
-            <input type="text" id="nameInput" placeholder="お名前を入力してください（10文字まで）" maxlength="10" aria-label="ランキング登録用お名前入力欄">
-            <button id="nameSubmitBtn" class="accent" type="button" aria-label="名前を登録する">登 録</button>
-        </div>
-    </section>
-
-    <!-- ゲーム終了後の再挑戦ボタン (名前登録後に表示) -->
-    <section id="retryWrap" class="control-container" style="display:none;" aria-hidden="true" role="region" aria-label="再挑戦">
-        <button id="retryBtn" class="accent" aria-label="再挑戦" type="button">再挑戦</button>
-    </section>
-
-    <!-- スタートボタン (ゲーム開始前のみ表示) -->
-    <div class="control-container" id="startBtnContainer">
-        <button id="startBtn" class="accent" aria-label="ゲーム開始" type="button">スタート</button>
-    </div>
-
+<main>
+    <header class="top">
+      <a href="https://goalball-kanagawa.org/" target="_blank" rel="noopener noreferrer">
+        <img id="kgbalogo" src="kgbalogo.png" alt="KGBAロゴ" />
+      </a>
+      <h1>ゴールボールサーチゲーム</h1>
+    </header>
 </main>
 
-<!-- 画面下部のコントロールボタン -->
-<footer role="contentinfo">
-    <section class="controls control-row-1" aria-label="情報確認" role="region">
-        <button id="ruleBtn" type="button">ルール</button>
-        <button id="checkBtn" type="button">イヤホン確認</button>
-        <button id="rankingBtn" type="button">ランキング</button>
-    </section>
+    <section class="controls control-row-1" aria-label="情報確認" role="region">
+      <button id="ruleBtn" aria-label="ルール" type="button">ルール</button>
+      <button id="checkBtn" aria-label="イヤホンの左右の確認" type="button">イヤホンの左右の確認</button>
+    </section>
 
-    <section class="controls control-row-2" aria-label="ヒント" role="region">
-        <button id="hintLBtn" type="button">ヒントL</button>
-        <button id="hintRBtn" type="button">ヒントR</button>
-    </section>
-</footer>
+    <section class="controls control-row-2" aria-label="ヒント" role="region">
+      <button id="hintBtn" aria-label="ヒント" type="button">ヒント</button>
+      <button id="hintBellBtn" aria-label="ヒント 鈴のみ" aria-pressed="false" type="button">ヒント／鈴のみ</button>
+    </section>
 
+    <section class="controls control-row-3" aria-label="ゲーム操作" role="region">
+      <button id="startBtn" class="accent" aria-label="スタート" aria-controls="keypadWrap" aria-expanded="false" type="button">スタート</button>
+      <button id="stopBtn" aria-label="再生停止" type="button">再生停止</button>
+    </section>
 
-<!-- ランキング表示モーダル -->
-<section id="rankingWrap" class="ranking-modal" style="display:none;" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="ranking-title">
-    <div class="ranking-content">
-        <h2 id="ranking-title" class="text-2xl font-bold text-center mb-4">🏆 グローバルランキング</h2>
-        <div id="rankingList">
-            <!-- ランキングデータがここに挿入されます -->
-            <p class="text-center text-gray-500" id="loadingRanking">ランキングを読み込み中...</p>
-        </div>
-        <button id="closeRankingBtn" type="button" class="mt-4">閉じる</button>
-    </div>
-</section>
+    <section id="status" role="status" aria-live="polite">
+      <div id="questionLabel">ようこそ！スタートボタンを押して下さい。</div>
+      <div id="currentInput">あなたの回答：なし</div>
+      <div id="result"></div>
+    </section>
 
-<!-- ルール表示モーダル -->
-<section id="ruleWrap" class="ranking-modal" style="display:none;" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="rule-title">
-    <div class="ranking-content">
-        <h2 id="rule-title" class="text-2xl font-bold text-center mb-4">🎧 ルール説明</h2>
-        <div id="ruleContent" class="rule-content-area text-left">
-            <p>このゲームは、音を頼りにボールの位置を予測し、その位置を数字（0.0～9.9）で解答するゲームです。全10問です。</p>
-            <ol class="list-decimal list-inside space-y-2 mt-4">
-                <li>**スタート**ボタンを押すとゲームが始まります。</li>
-                <li>左右の耳から聞こえる**ボールの音**（音量や定位）を頼りに、ボールがコート上のどこにあるかを予測します。</li>
-                <li>コートは左端が**0.0**、右端が**10.0**となっており、**0.0から9.9まで**の範囲で小数点第一位まで入力します。</li>
-                <li>テンキーで数値を入力し、**確 定**ボタンで解答します。</li>
-                <li>**ヒントL** / **ヒントR** ボタンを押すと、現在の問題の音を極端に左/右に振った状態で再生し、手がかりを得られます。</li>
-                <li>正解との誤差が小さいほど高スコアになります。</li>
-            </ol>
-            <p class="rule-tip">※ 正確な音声での体験のため、イヤホンまたはヘッドホンの着用が必須です。</p>
-        </div>
-        <button id="closeRuleBtn" type="button" class="mt-4">閉じる</button>
-    </div>
-</section>
+    <section id="keypadWrap" aria-label="数字入力" role="region" style="display:none;">
+      <div id="keypad" role="group" aria-label="数字入力パッド">
+        <button class="key" data-key="7" type="button">7</button>
+        <button class="key" data-key="8" type="button">8</button>
+        <button class="key" data-key="9" type="button">9</button>
+        
+        <button class="key" data-key="4" type="button">4</button>
+        <button class="key" data-key="5" type="button">5</button>
+        <button class="key" data-key="6" type="button">6</button>
+        
+        <button class="key" data-key="1" type="button">1</button>
+        <button class="key" data-key="2" type="button">2</button>
+        <button class="key" data-key="3" type="button">3</button>
+        
+        <button class="key" data-key="0" type="button">0</button>
+        <button class="key" data-key="." type="button">.</button>
+        <button class="confirm" data-key="Enter" type="button">決定</button>
 
-<div id="a11yStatus" class="sr-only" aria-live="assertive"></div>
+        <button class="key clear full-width" data-key="C" type="button">C</button>
+      </div>
+    </section>
 
-<script type="module">
-    // Firebaseのインポート
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, limit, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <div id="postGameControls" style="display:none;">
+      </div>
+    
+    <section id="retryWrap" style="display:none;" aria-hidden="true" role="region" aria-label="再挑戦">
+      <div id="scoreDisplay" aria-live="polite"></div>
+      <button id="retryBtn" class="accent" aria-label="再挑戦" type="button">再挑戦</button>
+    </section>
+    
+    <section id="rankingWrap" style="display:none;" aria-hidden="true" role="region" aria-label="グローバルランキング">
+      <h2>🏆 グローバルランキング</h2>
+      <div id="rankingList">
+        </div>
+      <button id="closeRankingBtn" type="button">閉じる</button>
+    </section>
+    
+    <div id="a11yStatus" class="sr-only" aria-live="assertive"></div>
+    
+  </main>
 
-    // Firestoreのログレベルを設定 (デバッグ用)
-    // setLogLevel('debug');
+  <footer class="credits" role="contentinfo">
+   <div class="footer-content">
+      © ゴールボールサーチゲームプロジェクト<br />
+      企画・制作：<a href="https://goalball-kanagawa.org/" target="_blank" rel="noopener noreferrer">KGBA</a> ＆ <a id="monLink" href="https://sites.google.com/view/kgba-tochigi/" target="_blank"
+        rel="noopener noreferrer">MON☆Stars</a><br />
+      無断転載・複製・改変を禁じます<br />
+      VOICEVOX: ずんだもん
+    </div>
+    <div class="monlogo">
+      <a href="https://sites.google.com/view/kgba-tochigi/" target="_blank" rel="noopener noreferrer">
+        <img src="monlogo.png" alt="MON☆Stars ロゴ" />
+      </a>
+    </div>
+  </footer>
 
-    // グローバル変数 (Canvas環境から提供される)
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
-    // Firebase初期化
-    let app, db, auth;
-    let userId = null;
-    let isAuthReady = false;
-
-    // Web Audio API関連
-    let audioContext;
-    let panner;
-    let gainNode;
-
-    // ゲーム状態
-    const GAME_QUESTIONS = 10;
-    let gameState = 'initial'; // 'initial', 'playing', 'finished'
-    let currentQuestion = 0;
-    let currentTargetPosition = 0; // 0.0 to 9.9
-    let currentInput = "0.0";
-    let totalScore = 0;
-
-    // DOM要素
-    const dom = {
-        startBtn: document.getElementById('startBtn'),
-        retryBtn: document.getElementById('retryBtn'),
-        keypadWrap: document.getElementById('keypadWrap'),
-        nameInputWrap: document.getElementById('nameInputWrap'),
-        nameInput: document.getElementById('nameInput'),
-        nameSubmitBtn: document.getElementById('nameSubmitBtn'),
-        retryWrap: document.getElementById('retryWrap'),
-        startBtnContainer: document.getElementById('startBtnContainer'),
-        currentQ: document.getElementById('currentQ'),
-        inputDisplay: document.getElementById('inputDisplay'),
-        message: document.getElementById('message'),
-        scoreDisplay: document.getElementById('scoreDisplay'),
-        rankingWrap: document.getElementById('rankingWrap'),
-        ruleWrap: document.getElementById('ruleWrap'),
-        rankingList: document.getElementById('rankingList'),
-        ruleBtn: document.getElementById('ruleBtn'),
-        checkBtn: document.getElementById('checkBtn'),
-        rankingBtn: document.getElementById('rankingBtn'),
-        hintLBtn: document.getElementById('hintLBtn'),
-        hintRBtn: document.getElementById('hintRBtn'),
-        closeRankingBtn: document.getElementById('closeRankingBtn'),
-        closeRuleBtn: document.getElementById('closeRuleBtn'),
-        a11yStatus: document.getElementById('a11yStatus')
+<script>
+    // ★★★ あなたの firebaseConfig の値 ★★★
+    const firebaseConfig = {
+      apiKey: "AIzaSyDwBUd2D1Mt8HlZbh9Mvpi95JP6P0F7S7E",
+      authDomain: "gsranking.firebaseapp.com",
+      projectId: "gsranking",
+      storageBucket: "gsranking.firebasestorage.app",
+      messagingSenderId: "876090875752",
+      appId: "1:876090875752:web:7841b486506842230ec0dd",
+      measurementId: "G-M1Y9F13D2E"
     };
 
-    /**
-     * アクセシビリティのためにステータスメッセージを読み上げさせる
-     * @param {string} msg 読み上げさせるメッセージ
-     */
-    function announce(msg) {
-        dom.a11yStatus.textContent = msg;
-    }
-
-    // --- Firebase/Firestore関連 ---
-
-    /**
-     * Firebase認証とFirestoreの初期化
-     */
-    async function initializeFirebase() {
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-
-            // 認証処理
-            if (initialAuthToken) {
-                await signInWithCustomToken(auth, initialAuthToken);
-            } else {
-                await signInAnonymously(auth);
-            }
-
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    userId = user.uid;
-                    isAuthReady = true;
-                    console.log("Firebase initialized and signed in. User ID:", userId);
-                    // 認証完了後にランキングを読み込む
-                    loadRanking(); 
-                } else {
-                    // 匿名認証が失敗した場合
-                    userId = crypto.randomUUID();
-                    isAuthReady = true;
-                    console.error("Authentication failed. Using random UUID:", userId);
-                    loadRanking();
-                }
-            });
-
-        } catch (error) {
-            console.error("Firebase初期化エラー:", error);
-            // エラー時でもゲーム自体は動くようにする (ランキング機能は不可)
-            isAuthReady = true;
-        }
-    }
-
-    /**
-     * ランキングをFirestoreに保存
-     * @param {string} name プレイヤー名
-     * @param {number} score スコア (平均誤差)
-     */
-    async function saveRanking(name, score) {
-        if (!isAuthReady || !db) {
-            console.error("Firestoreが未初期化または認証されていません。");
-            dom.message.textContent = "エラー: ランキング保存に失敗しました。";
-            return;
-        }
-
-        try {
-            // パス: /artifacts/{appId}/public/data/goalball_ranking
-            const rankingRef = collection(db, `artifacts/${appId}/public/data/goalball_ranking`);
-            
-            await addDoc(rankingRef, {
-                userId: userId,
-                name: name.trim() || "名無し",
-                score: score, // スコアは低いほど良い
-                timestamp: Date.now()
-            });
-
-            dom.message.textContent = `${name}さんのスコア ${score.toFixed(3)} をランキングに登録しました！`;
-            announce("ランキングにスコアを登録しました。");
-            loadRanking(); // ランキングを再読み込み
-        } catch (error) {
-            console.error("ランキング保存エラー:", error);
-            dom.message.textContent = "エラー: ランキング保存中に問題が発生しました。";
-            announce("ランキングの保存中にエラーが発生しました。");
-        }
-    }
-
-    /**
-     * ランキングデータをFirestoreから読み込み、表示を更新
-     */
-    async function loadRanking() {
-        if (!isAuthReady || !db) return;
-        
-        dom.rankingList.innerHTML = '<p class="text-center text-gray-500">ランキングを読み込み中...</p>';
-
-        try {
-            const rankingRef = collection(db, `artifacts/${appId}/public/data/goalball_ranking`);
-            
-            // スコアが低い順 (誤差が小さい順) にソート
-            const q = query(rankingRef, orderBy('score', 'asc')); // 'asc' (昇順) で誤差が小さい順
-            const querySnapshot = await getDocs(q);
-
-            let rankingHtml = '<div class="space-y-2">';
-            let rank = 1;
-            
-            // クライアント側で上位10件のみを抽出
-            const topScores = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-                                              .sort((a, b) => a.score - b.score) // クライアント側でも低い順にソート
-                                              .slice(0, 10);
-
-
-            if (topScores.length === 0) {
-                rankingHtml += '<p class="text-center text-gray-500">まだスコアがありません。</p>';
-            } else {
-                topScores.forEach(data => {
-                    // スコアを小数点以下3桁にフォーマット
-                    const formattedScore = data.score.toFixed(3);
-                    const isUser = data.userId === userId ? 'bg-yellow-100 font-extrabold' : '';
-                    rankingHtml += `
-                        <div class="rank-item p-2 rounded-lg ${isUser}">
-                            <span>${rank}. ${data.name}</span>
-                            <span class="rank-score">${formattedScore}</span>
-                        </div>
-                    `;
-                    rank++;
-                });
-            }
-
-            rankingHtml += '</div>';
-            dom.rankingList.innerHTML = rankingHtml;
-
-        } catch (error) {
-            console.error("ランキング読み込みエラー:", error);
-            dom.rankingList.innerHTML = '<p class="text-center text-red-500">ランキングの読み込み中にエラーが発生しました。</p>';
-        }
-    }
-
-
-    // --- Web Audio API/立体音響関連 ---
-
-    /**
-     * Web Audio APIを初期化
-     */
-    function initAudioContext() {
-        // Safariなどで必要になるWebkitプレフィックスも考慮
-        if (audioContext) return;
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        
-        // ステレオパンナーノードを作成
-        panner = audioContext.createStereoPanner();
-        panner.connect(audioContext.destination);
-
-        // ゲインノードを作成 (音量調整用)
-        gainNode = audioContext.createGain();
-        gainNode.connect(panner);
-    }
-
-    /**
-     * ボールの音を再生
-     * @param {number} position 0.0 (左) から 10.0 (右) までのコート上の位置
-     * @param {number} duration 音の再生時間 (秒)
-     * @param {number} panOverride -1.0(左) から 1.0(右) までのパンの強制値 (ヒント用)
-     */
-    function playBallSound(position, duration = 1.0, panOverride = null) {
-        initAudioContext();
-        if (audioContext.state === 'suspended') {
-            // ユーザー操作によるAudioContextの再開
-            audioContext.resume().catch(e => console.error("AudioContext resume failed:", e));
-        }
-
-        // 0.0 - 10.0 の位置を -1.0 - 1.0 のパン値にマッピング
-        // 0.0 -> -1.0 (左端)
-        // 5.0 -> 0.0 (中央)
-        // 10.0 -> 1.0 (右端)
-        // 位置は0.0～9.9なので、10.0を最大値とする
-        const panValue = panOverride !== null ? panOverride : (position / 5.0) - 1.0;
-
-        const now = audioContext.currentTime;
-        
-        // 一時的にステレオパンを設定
-        panner.pan.setValueAtTime(panValue, now);
-
-        // シンプルなサイン波でボールの音をシミュレーション
-        const newOscillator = audioContext.createOscillator();
-        newOscillator.type = 'sine';
-        // ゴールボールの音を模すため、周波数は少し低めに設定（鈴の音を模倣）
-        newOscillator.frequency.setValueAtTime(250, now);
-
-        // 音の鳴動（音量が徐々に下がる）
-        gainNode.gain.setValueAtTime(0.3, now); // 初期音量
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration); // 減衰
-
-        newOscillator.connect(gainNode);
-        newOscillator.start(now);
-        newOscillator.stop(now + duration);
-    }
-
-    /**
-     * イヤホン左右確認用の音を再生
-     */
-    function playCheckSound() {
-        initAudioContext();
-        if (audioContext.state === 'suspended') {
-            audioContext.resume().catch(e => console.error("AudioContext resume failed:", e));
-        }
-
-        const now = audioContext.currentTime;
-
-        // 左耳で「左」の音を再生
-        panner.pan.setValueAtTime(-1.0, now);
-        const oscL = audioContext.createOscillator();
-        oscL.frequency.setValueAtTime(600, now);
-        oscL.connect(gainNode);
-        gainNode.gain.setValueAtTime(0.5, now);
-        gainNode.gain.linearRampToValueAtTime(0.0001, now + 0.5);
-        oscL.start(now);
-        oscL.stop(now + 0.5);
-
-        // 0.7秒後に右耳で「右」の音を再生
-        setTimeout(() => {
-            const nextTime = audioContext.currentTime;
-            panner.pan.setValueAtTime(1.0, nextTime);
-            const oscR = audioContext.createOscillator();
-            oscR.frequency.setValueAtTime(600, nextTime);
-            oscR.connect(gainNode);
-            gainNode.gain.setValueAtTime(0.5, nextTime);
-            gainNode.gain.linearRampToValueAtTime(0.0001, nextTime + 0.5);
-            oscR.start(nextTime);
-            oscR.stop(nextTime + 0.5);
-            announce("左、右の音が流れました。");
-        }, 700);
-        
-        dom.message.textContent = "左、右の音を再生しました。";
-    }
-
-
-    // --- ゲームロジック ---
-
-    /**
-     * ゲームを初期状態に戻す
-     */
-    function resetGame() {
-        gameState = 'initial';
-        currentQuestion = 0;
-        totalScore = 0;
-        currentInput = "0.0";
-        dom.inputDisplay.textContent = currentInput;
-        dom.message.textContent = "";
-        dom.currentQ.textContent = "イヤホンを装着し、スタートを押してね！";
-        dom.startBtnContainer.style.display = 'flex';
-        dom.keypadWrap.style.display = 'none';
-        dom.nameInputWrap.style.display = 'none';
-        dom.retryWrap.style.display = 'none';
-    }
-
-    /**
-     * 新しい問題を設定
-     */
-    function generateNewQuestion() {
-        if (currentQuestion >= GAME_QUESTIONS) {
-            endGame();
-            return;
-        }
-
-        currentQuestion++;
-        // 0.0から9.9までのランダムな位置（小数点第一位まで）
-        currentTargetPosition = Math.floor(Math.random() * 100) / 10; 
-        currentInput = "0.0";
-        dom.inputDisplay.textContent = currentInput;
-        dom.message.textContent = "音声を再生します...";
-        
-        dom.currentQ.textContent = `第${currentQuestion}問目 (${GAME_QUESTIONS}問中)。ボールの位置を予測してください。`;
-        announce(`第${currentQuestion}問目です。ボールの位置を予測してください。`);
-
-        // 問題の音を再生
-        setTimeout(() => {
-            playBallSound(currentTargetPosition, 1.0);
-            dom.message.textContent = "入力してください (0.0 - 9.9)";
-        }, 500);
-    }
-
-    /**
-     * ゲーム開始処理
-     */
-    function startGame() {
-        if (gameState === 'playing') return;
-        
-        resetGame(); // 念のためリセット
-        gameState = 'playing';
-        dom.startBtnContainer.style.display = 'none';
-        dom.keypadWrap.style.display = 'block';
-        
-        dom.message.textContent = "ゲーム開始！";
-        announce("ゲーム開始！");
-        generateNewQuestion();
-    }
-
-    /**
-     * ゲーム終了処理
-     */
-    function endGame() {
-        gameState = 'finished';
-        dom.keypadWrap.style.display = 'none';
-        dom.nameInputWrap.style.display = 'block';
-        
-        // 平均誤差スコア (低いほど良い)
-        const finalScore = totalScore / GAME_QUESTIONS; 
-        dom.currentQ.textContent = "全問終了！";
-        dom.scoreDisplay.textContent = `平均誤差スコア: ${finalScore.toFixed(3)}`;
-        dom.message.textContent = "ランキングに登録する名前を入力してください。";
-        announce(`ゲーム終了です。あなたの平均誤差スコアは${finalScore.toFixed(3)}です。ランキングに登録する名前を入力してください。`);
-    }
-
-    /**
-     * 回答をチェックし、次の問題へ進む
-     */
-    function checkAnswer() {
-        if (gameState !== 'playing') return;
-
-        const answer = parseFloat(currentInput);
-        if (isNaN(answer) || answer < 0 || answer >= 10) {
-            dom.message.textContent = "無効な入力です (0.0～9.9)。";
-            announce("無効な入力です。0.0から9.9までの数値を入力してください。");
-            return;
-        }
-
-        // 誤差を計算
-        const error = Math.abs(currentTargetPosition - answer);
-        
-        // totalScoreに誤差を加算 (ランキングは平均誤差、低いほど良い)
-        totalScore += error;
-
-        let feedback;
-        if (error < 0.1) {
-            feedback = `🌟 素晴らしい！誤差${error.toFixed(2)}。`;
-        } else if (error < 0.5) {
-            feedback = `◎ ニアミス！誤差${error.toFixed(2)}。`;
-        } else if (error < 1.0) {
-            feedback = `△ もう少し！誤差${error.toFixed(2)}。`;
-        } else {
-            feedback = `× 大きな誤差です (${error.toFixed(2)})。`;
-        }
-
-        const actualPos = currentTargetPosition.toFixed(1);
-        dom.message.textContent = `${feedback} 正解は${actualPos}でした。`;
-        announce(`${feedback} 正解は${actualPos}でした。次の問題へ進みます。`);
-        
-        // ユーザーが答えを確認できるよう、少し間を空けてから次へ
-        setTimeout(() => {
-            generateNewQuestion();
-        }, 3000);
-    }
-
-    /**
-     * テンキー入力処理
-     * @param {string} key 入力されたキー
-     */
-    function handleKeyInput(key) {
-        if (gameState !== 'playing') return;
-
-        let tempInput = currentInput;
-
-        if (key === 'C') {
-            tempInput = "0";
-        } else if (key === 'ENTER') {
-            checkAnswer();
-            return;
-        } else if (key === '.') {
-            if (!tempInput.includes('.')) {
-                tempInput += '.';
-            }
-        } else {
-            // 数字の処理
-            if (tempInput === "0") {
-                tempInput = key;
-            } else if (tempInput.includes('.')) {
-                // 小数点以下は1桁まで
-                const parts = tempInput.split('.');
-                if (parts[1].length < 1) {
-                    tempInput += key;
-                }
-            } else if (tempInput.length < 1) {
-                // 整数部は最大1桁 (0-9)
-                tempInput += key;
-            }
-        }
-
-        // 9.9を超える入力は許可しない
-        if (parseFloat(tempInput) >= 10) {
-            if (tempInput.includes('.') && tempInput.split('.')[0].length > 1) {
-                 tempInput = "9.9";
-            } else if (!tempInput.includes('.') && tempInput.length > 1) {
-                tempInput = tempInput.charAt(0); // 2桁目が入力されたら最初の桁だけ残す
-            }
-        }
-        
-        // 表示用の整形
-        if (tempInput === ".") {
-            dom.inputDisplay.textContent = "0.";
-            currentInput = "0.";
-        } else if (tempInput.endsWith('.')) {
-             dom.inputDisplay.textContent = tempInput;
-             currentInput = tempInput;
-        } else {
-            const num = parseFloat(tempInput);
-            // 0から9.9の範囲で、小数点以下1桁まで表示
-            dom.inputDisplay.textContent = num.toFixed(tempInput.includes('.') ? 1 : 0);
-            currentInput = dom.inputDisplay.textContent; // 正式な入力として保存
-        }
-    }
-    
-    // --- イベントリスナー設定 ---
-
-    function setupEventListeners() {
-        // スタートボタン
-        dom.startBtn.addEventListener('click', startGame);
-
-        // 再挑戦ボタン
-        dom.retryBtn.addEventListener('click', resetGame);
-
-        // テンキーボタン
-        document.querySelectorAll('#keypad .key, #keypad .confirm').forEach(button => {
-            button.addEventListener('click', (e) => {
-                handleKeyInput(e.target.dataset.key);
-            });
-        });
-
-        // 名前登録ボタン
-        dom.nameSubmitBtn.addEventListener('click', () => {
-            const name = dom.nameInput.value || "名無し";
-            const score = totalScore / GAME_QUESTIONS; // 平均誤差スコア
-            dom.nameInputWrap.style.display = 'none';
-            dom.retryWrap.style.display = 'flex';
-            saveRanking(name, score);
-        });
-
-        // モーダル表示/非表示
-        dom.ruleBtn.addEventListener('click', () => { dom.ruleWrap.style.display = 'flex'; announce("ルールモーダルを開きました。"); });
-        dom.closeRuleBtn.addEventListener('click', () => { dom.ruleWrap.style.display = 'none'; });
-        dom.rankingBtn.addEventListener('click', () => { 
-            loadRanking();
-            dom.rankingWrap.style.display = 'flex'; 
-            announce("ランキングモーダルを開きました。"); 
-        });
-        dom.closeRankingBtn.addEventListener('click', () => { dom.rankingWrap.style.display = 'none'; });
-        
-        // イヤホン確認ボタン
-        dom.checkBtn.addEventListener('click', playCheckSound);
-
-        // ヒントボタン
-        dom.hintLBtn.addEventListener('click', () => {
-            if (gameState === 'playing') {
-                playBallSound(currentTargetPosition, 1.0, -1.0); // 左に固定して再生
-                dom.message.textContent = "ヒントL: 音声を左に固定して再生しました。";
-                announce("ヒント左。音声を左に固定して再生しました。");
-            }
-        });
-        dom.hintRBtn.addEventListener('click', () => {
-            if (gameState === 'playing') {
-                playBallSound(currentTargetPosition, 1.0, 1.0); // 右に固定して再生
-                dom.message.textContent = "ヒントR: 音声を右に固定して再生しました。";
-                announce("ヒント右。音声を右に固定して再生しました。");
-            }
-        });
-        
-        // キーボード操作のサポート (テンキーと同じ動作)
-        document.addEventListener('keydown', (e) => {
-            const keyMap = {
-                '0': '0', '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9',
-                '.': '.', 'Delete': 'C', 'Backspace': 'C', 'Enter': 'ENTER'
-            };
-            if (keyMap[e.key]) {
-                e.preventDefault(); // デフォルトの動作を抑制
-                handleKeyInput(keyMap[e.key]);
-                // 対応するボタンに視覚的なフィードバックを与える (任意)
-                const btn = document.querySelector(`[data-key="${keyMap[e.key]}"]`);
-                if (btn) {
-                    btn.classList.add('scale-95', 'opacity-80');
-                    setTimeout(() => btn.classList.remove('scale-95', 'opacity-80'), 100);
-                }
-            }
-        });
-    }
-
-    // アプリケーション起動
-    window.onload = function () {
-        initializeFirebase();
-        initAudioContext(); // AudioContextはユーザー操作後に再開が必要になる場合がある
-        setupEventListeners();
-        resetGame(); // 初期画面表示
-    };
-
+    // Firebaseの初期化（この app と db オブジェクトを script.js から使います）
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore(); 
 </script>
 
+ <script src="script_v2.js" defer></script>
 </body>
 </html>
