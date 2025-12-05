@@ -1,9 +1,8 @@
-/* script_v2.js */
+/* script_v2.js - 全ボタン音声修正最終版 */
 
 // --- 定数と設定 ---
-// 注意: このパスの下に音声ファイルが必要です (例: sound/seikai.mp3)
 const SOUND_PATH = "sound/"; 
-const TOTAL_QUESTIONS = 3; // 全問題数
+const TOTAL_QUESTIONS = 3; 
 
 // --- 音声ファイル一覧（名前はexact） ---
 const QUIZ_FILES = {
@@ -18,15 +17,23 @@ const ANSWER_FILES = {
 };
 const seikaiFile = "seikai.mp3";
 const noFile = "no.mp3";
-const ruleFiles = ["zunda_rule001.mp3", "zunda_rule002.mp3", "zunda_rule003.mp3", "zunda_rule004.mp3"];
+
+// ★修正点: ルール音声ファイル一覧 (zunda_rule005.mp3まで)
+const ruleFiles = ["zunda_rule001.mp3", "zunda_rule002.mp3", "zunda_rule003.mp3", "zunda_rule004.mp3", "zunda_rule005.mp3"];
 const INPUT_FILES = {
-    "C": "input_c.mp3", "0": "input_0.mp3", "1": "input_1.mp3", "2": "input_2.mp3", 
-    "3": "input_3.mp3", "4": "input_4.mp3", "5": "input_5.mp3", "6": "input_6.mp3", 
-    "7": "input_7.mp3", "8": "input_8.mp3", "9": "input_9.mp3", ".": "input_dot.mp3", 
-    "ENTER": "input_enter.mp3", "RETRY": "retry_btn.mp3", "RULE": "rule_btn.mp3", 
-    "CHECK": "check_btn.mp3", "HINT_L": "hint_l.mp3", "HINT_R": "hint_r.mp3", 
-    "RANKING": "ranking_btn.mp3", "CLOSE": "close_ranking.mp3",
-    "STOP": "stop_btn.mp3" // 再生停止ボタンの音声
+    "C": "input_c.mp3", 
+    "0": "input_0.mp3", "1": "input_1.mp3", "2": "input_2.mp3", "3": "input_3.mp3", 
+    "4": "input_4.mp3", "5": "input_5.mp3", "6": "input_6.mp3", "7": "input_7.mp3", 
+    "8": "input_8.mp3", "9": "input_9.mp3", ".": "input_dot.mp3", 
+    "ENTER": "input_enter.mp3", 
+    "RETRY": "retry_btn.mp3", 
+    "RULE": "rule_btn.mp3", 
+    "CHECK": "check_btn.mp3", 
+    "HINT_L": "hint_l.mp3",   
+    "HINT_R": "hint_r.mp3",   
+    "RANKING": "ranking_btn.mp3", 
+    "CLOSE": "close_ranking.mp3",
+    "STOP": "stop_btn.mp3" 
 };
 const gameClearFile = "desutasha.mp3"; 
 const nameInputPromptFile = "name_input_prompt.mp3"; 
@@ -38,46 +45,35 @@ let score = 0;
 let correctAnswer; 
 let playerInput = ""; 
 let isPlaying = false; 
-let currentAudio = null; // ★追加: 現在再生中のAudioオブジェクトを保持
+let currentAudio = null; 
 
 // --- DOM要素 ---
 const startBtn = document.getElementById("startBtn");
 const stopBtn = document.getElementById("stopBtn"); 
 const ruleBtn = document.getElementById("ruleBtn");
 const checkBtn = document.getElementById("checkBtn");
-// ★修正: HTMLの元のIDに合わせて要素を取得
 const hintLBtn = document.getElementById("hintBtn"); 
 const hintRBtn = document.getElementById("hintBellBtn"); 
-const rankingBtn = document.getElementById("rankingBtn"); 
+const rankingBtn = document.getElementById("rankingBtn");
+const retryBtn = document.getElementById("retryBtn"); 
+const nameSubmitBtn = document.getElementById("nameSubmitBtn"); 
 
-// Statusセクション内の要素
-const questionLabel = document.getElementById("questionLabel"); 
-const currentInput = document.getElementById("currentInput");   
 const messageDisplay = document.getElementById("result");     
 const currentQDisplay = document.getElementById("questionLabel");
 const inputDisplay = document.getElementById("currentInput");   
-
-const keypad = document.getElementById("keypad");
-const inputKeys = document.querySelectorAll(".key, .confirm");
-const retryWrap = document.getElementById("retryWrap");
-const retryBtn = document.getElementById("retryBtn");
 const scoreDisplay = document.getElementById("scoreDisplay");
+const inputKeys = document.querySelectorAll(".key, .confirm");
 
-// --- モーダル関連の新しいDOM要素 ---
 const rankingWrap = document.getElementById("rankingWrap");
 const rankingList = document.getElementById("rankingList");
 const closeRankingBtn = document.getElementById("closeRankingBtn");
 const ruleWrap = document.getElementById("ruleWrap"); 
 const closeRuleBtn = document.getElementById("closeRuleBtn"); 
-
 const keypadWrap = document.getElementById("keypadWrap");
-
-// 名前入力関連のDOM要素
 const nameInputWrap = document.getElementById("nameInputWrap");
 const nameInput = document.getElementById("nameInput");
-const nameSubmitBtn = document.getElementById("nameSubmitBtn");
 
-// ゲームのメインセクションとコントロールセクション
+const mainSection = document.getElementById("mainGame");
 const controlsRow1 = document.querySelector(".control-row-1");
 const controlsRow2 = document.querySelector(".control-row-2");
 
@@ -95,23 +91,20 @@ function stopAudio() {
 
 function playAudioElement(filename, bypassCheck = false) {
     return new Promise((resolve, reject) => {
-        // ... (オーディオ再生ロジックは変更なし。ただし、HTMLの要素がないとエラーになるため、
-        // rankingWrap, ruleWrapのチェックはこれらの要素がHTMLにあることが前提です)
         if (isPlaying && !bypassCheck) {
             console.log("Audio is already playing, skipping new audio.");
             resolve();
             return;
         }
 
-        // モーダルが開いている場合のチェック（要素がない場合はスキップ）
         if (rankingWrap && ruleWrap && (rankingWrap.style.display === 'flex' || ruleWrap.style.display === 'flex')) {
-            if (filename !== INPUT_FILES["CLOSE"] && filename !== INPUT_FILES["RANKING"] && filename !== INPUT_FILES["RULE"]) {
+            if (filename !== INPUT_FILES["CLOSE"]) {
                  resolve();
                  return;
             }
         }
-
-        stopAudio(); // 新しい音声を再生する前に、念のため既存の音声を停止
+        
+        stopAudio(); 
 
         const audio = new Audio(SOUND_PATH + filename);
         currentAudio = audio; 
@@ -123,7 +116,7 @@ function playAudioElement(filename, bypassCheck = false) {
             }).catch(e => {
                 console.error(`Audio playback failed for ${filename}:`, e);
                 isPlaying = false;
-                currentAudio = null;
+                currentAudio = null; 
                 reject(e);
             });
         };
@@ -157,81 +150,254 @@ async function playAudioSequence(filenames) {
     }
 }
 
-// ... (省略: generateQuestion, nextQuestion, playQuestionAudio, confirmAnswer, playAnswerAudio, endGame, showNameInputPrompt, handleNameSubmit, startGame, retryGame)
-// ★注意: 上記の関数は前回のコードで定義されていることが前提です。
+// --- ゲームロジック ---
+function updateUI() {
+    if (messageDisplay) messageDisplay.textContent = "";
+    if (scoreDisplay) scoreDisplay.textContent = "";
+    if (inputDisplay) inputDisplay.textContent = playerInput || "___";
+    
+    if (startBtn) startBtn.style.display = 'none';
+    if (keypadWrap) keypadWrap.style.display = 'none';
+    const retryWrap = document.getElementById("retryWrap");
+    if (retryWrap) retryWrap.style.display = 'none';
+    if (nameInputWrap) nameInputWrap.style.display = 'none';
+    
+    if (rankingWrap) rankingWrap.style.display = 'none';
+    if (ruleWrap) ruleWrap.style.display = 'none';
 
-// --- イベントリスナー (安全な実装) ---
+    if (keypadWrap) keypadWrap.setAttribute('aria-hidden', 'true');
+    if (retryWrap) retryWrap.setAttribute('aria-hidden', 'true');
+    if (nameInputWrap) nameInputWrap.setAttribute('aria-hidden', 'true');
 
-// スタートボタン
+    if (questionIndex === 0) {
+        if (startBtn) startBtn.style.display = 'block';
+        if (currentQDisplay) currentQDisplay.textContent = "問題を再生するにはスタートを押してください";
+        
+        if (controlsRow1) controlsRow1.style.display = 'flex';
+        if (controlsRow2) controlsRow2.style.display = 'flex';
+        
+    } 
+    else if (questionIndex <= TOTAL_QUESTIONS) {
+        if (keypadWrap) keypadWrap.style.display = 'flex';
+        if (keypadWrap) keypadWrap.setAttribute('aria-hidden', 'false');
+        if (currentQDisplay) currentQDisplay.textContent = `第 ${questionIndex} 問 / ${TOTAL_QUESTIONS} 問`;
+
+        if (controlsRow1) controlsRow1.style.display = 'none';
+        if (controlsRow2) controlsRow2.style.display = 'none';
+    } 
+    else {
+        if (nameInputWrap) nameInputWrap.style.display = 'block';
+        if (nameInputWrap) nameInputWrap.setAttribute('aria-hidden', 'false');
+        
+        if (currentQDisplay) currentQDisplay.textContent = `結果: ${score} / ${TOTAL_QUESTIONS} 点`;
+        if (scoreDisplay) scoreDisplay.textContent = `あなたのスコア: ${score} / ${TOTAL_QUESTIONS} 点`;
+
+        if (controlsRow1) controlsRow1.style.display = 'flex';
+        if (controlsRow2) controlsRow2.style.display = 'flex';
+        
+        if(retryWrap && retryWrap.style.display === 'block') {
+            if (nameInputWrap) nameInputWrap.style.display = 'none';
+            if (retryWrap) retryWrap.style.display = 'block';
+            if (retryWrap) retryWrap.setAttribute('aria-hidden', 'false');
+        }
+    }
+}
+function generateQuestion() {
+    let num = (Math.random() * 10).toFixed(1);
+    if (num.endsWith(".0")) {
+        num = num.substring(0, num.length - 2);
+    }
+    return num;
+}
+function nextQuestion() {
+    questionIndex++;
+    if (questionIndex > TOTAL_QUESTIONS) {
+        endGame();
+        return;
+    }
+    correctAnswer = generateQuestion();
+    playerInput = "";
+    updateUI();
+    playQuestionAudio(correctAnswer).catch(e => console.error("Question audio sequence failed:", e));
+}
+function playQuestionAudio(answer) {
+    const parts = answer.split('.');
+    let filenames = [];
+    if (parts[0] !== "") {
+        filenames.push(QUIZ_FILES[parts[0]]);
+    }
+    if (answer.includes('.')) {
+        filenames.push(QUIZ_FILES['.']);
+        if (parts.length > 1 && parts[1] !== "") {
+            filenames.push(QUIZ_FILES[parts[1]]);
+        }
+    }
+    return playAudioSequence(filenames);
+}
+function confirmAnswer() {
+    if (isPlaying) {
+        if (messageDisplay) messageDisplay.textContent = "音声再生中です。しばらくお待ちください。";
+        return;
+    }
+    if (questionIndex === 0 || questionIndex > TOTAL_QUESTIONS) {
+        if (messageDisplay) messageDisplay.textContent = "ゲームが開始されていません。";
+        return;
+    }
+    if (playerInput === "") {
+        if (messageDisplay) messageDisplay.textContent = "数値を入力してください。";
+        return;
+    }
+    if (playerInput === correctAnswer) {
+        score++;
+        if (messageDisplay) messageDisplay.textContent = "正解！次の問題に進みます。";
+        playAudioElement(seikaiFile).then(() => {
+            nextQuestion(); 
+        }).catch(e => console.error("Seikai audio failed:", e));
+    } else {
+        if (messageDisplay) messageDisplay.textContent = `残念。正解は ${correctAnswer} でした。`;
+        playAudioElement(noFile).then(() => {
+            return playAnswerAudio(correctAnswer);
+        }).then(() => {
+            nextQuestion();
+        }).catch(e => console.error("No/Answer audio failed:", e));
+    }
+    playAudioElement(INPUT_FILES["ENTER"], true).catch(e => console.error("Input audio failed", e));
+}
+function playAnswerAudio(answer) {
+    const parts = answer.split('.');
+    let filenames = [];
+    if (parts[0] !== "") {
+        filenames.push(ANSWER_FILES[parts[0]]);
+    }
+    if (answer.includes('.')) {
+        filenames.push(ANSWER_FILES['.']);
+        if (parts.length > 1 && parts[1] !== "") {
+            filenames.push(ANSWER_FILES[parts[1]]);
+        }
+    }
+    return playAudioSequence(filenames);
+}
+function endGame() {
+    updateUI();
+    if (messageDisplay) messageDisplay.textContent = `ゲーム終了！${TOTAL_QUESTIONS}問中${score}問正解でした。`;
+    const endAudioFile = (score === TOTAL_QUESTIONS) ? gameClearFile : gameEndMessageFile;
+    playAudioElement(endAudioFile).then(() => {
+        showNameInputPrompt();
+    }).catch(e => console.error("Game end audio failed:", e));
+}
+function showNameInputPrompt() {
+    playAudioElement(nameInputPromptFile).catch(e => console.error("Name input prompt audio failed:", e));
+    if (nameInput) nameInput.focus();
+}
+function handleNameSubmit() {
+    if (!nameInput) return;
+    const name = nameInput.value.trim();
+    if (name.length === 0) {
+        if (messageDisplay) messageDisplay.textContent = "名前を入力してください。";
+        playAudioElement(noFile).catch(e => console.error("No audio failed:", e));
+        return;
+    }
+    if (messageDisplay) messageDisplay.textContent = `${name} さん、スコア${score}/${TOTAL_QUESTIONS}をランキングに登録しました！`;
+    const retryWrap = document.getElementById("retryWrap");
+    playAudioElement(seikaiFile).then(() => {
+        if (nameInputWrap) nameInputWrap.style.display = 'none';
+        if (nameInputWrap) nameInputWrap.setAttribute('aria-hidden', 'true');
+        if (retryWrap) retryWrap.style.display = 'block'; 
+        if (retryWrap) retryWrap.setAttribute('aria-hidden', 'false');
+    }).catch(e => console.error("Seikai audio failed:", e));
+}
+function startGame() {
+    if (isPlaying) return;
+    score = 0;
+    questionIndex = 0;
+    playerInput = "";
+    if (nameInput) nameInput.value = ""; 
+    if (messageDisplay) messageDisplay.textContent = "ゲームを開始します。";
+    // ゲーム開始時はルール音声 (5ファイル) を再生
+    playAudioSequence(ruleFiles).then(() => {
+        nextQuestion();
+    }).catch(e => console.error("Rule audio sequence failed:", e));
+    updateUI();
+}
+function retryGame() {
+    playAudioElement(INPUT_FILES["RETRY"], true).catch(e => console.error("Input audio failed", e));
+    startGame();
+}
+
+
+// --- イベントリスナー ---
+
 if (startBtn) startBtn.addEventListener("click", startGame);
 
-// 再生停止ボタン
 if (stopBtn) stopBtn.addEventListener("click", () => {
-    if (currentAudio) {
+    if (isPlaying && INPUT_FILES["STOP"]) {
         playAudioElement(INPUT_FILES["STOP"], true).then(() => {
             stopAudio();
         }).catch(e => console.error("Stop audio failed:", e));
+    } else {
+        stopAudio();
     }
 });
 
-
-// 再挑戦ボタン
 if (retryBtn) retryBtn.addEventListener("click", retryGame);
 
-// 名前登録ボタン
 if (nameSubmitBtn) nameSubmitBtn.addEventListener("click", handleNameSubmit);
 
-// ルールボタン
+// ★ルールボタン (ruleBtn) の音声シーケンス
 if (ruleBtn) ruleBtn.addEventListener("click", () => {
     if (isPlaying) return;
-    playAudioElement(INPUT_FILES["RULE"], true).catch(e => console.error("Input audio failed", e));
-    
-    // ルールモーダルを表示
-    if (ruleWrap) {
-        ruleWrap.style.display = 'flex';
-        ruleWrap.setAttribute('aria-hidden', 'false');
-    }
+    playAudioElement(INPUT_FILES["RULE"], true).then(() => {
+        if (ruleWrap) {
+            ruleWrap.style.display = 'flex';
+            ruleWrap.setAttribute('aria-hidden', 'false');
+        }
+        // rule_btn.mp3 の後にルール音声 5 ファイルを再生
+        return playAudioSequence(ruleFiles); 
+    }).catch(e => console.error("Rule button action failed:", e));
 });
 
-// イヤホン確認ボタン
+// ★イヤホンの左右の確認ボタン (checkBtn) の音声シーケンス
 if (checkBtn) checkBtn.addEventListener("click", () => {
     if (isPlaying) return;
     playAudioElement(INPUT_FILES["CHECK"], true).then(() => {
-        // LとRの音声を再生 (ファイル名は想定)
-        return playAudioSequence(["check_l.mp3", "check_r.mp3"]); 
+        // check_btn.mp3 の後に zunda_check.mp3 を再生
+        return playAudioElement("zunda_check.mp3");
     }).catch(e => console.error("Check audio sequence failed:", e));
 });
 
-// ヒントLボタン (元の #hintBtn)
+// ★ヒントLボタン (hintBtn) の音声シーケンス
 if (hintLBtn) hintLBtn.addEventListener("click", () => {
     if (isPlaying || questionIndex === 0 || questionIndex > TOTAL_QUESTIONS) return;
-    playAudioElement(INPUT_FILES["HINT_L"] || "default_hint_l.mp3", true).then(() => {
-        return playAudioElement("hint_l_sound.mp3");
+    playAudioElement(INPUT_FILES["HINT_L"], true).then(() => {
+        // hint_l.mp3 の後に zunda_rule005.mp3 -> hint.mp3 を再生
+        return playAudioSequence(["zunda_rule005.mp3", "hint.mp3"]);
     }).catch(e => console.error("Hint L audio failed:", e));
 });
 
-// ヒントRボタン (元の #hintBellBtn)
+// ★ヒント／鈴のみボタン (hintBellBtn/hintRBtn) の音声シーケンス
 if (hintRBtn) hintRBtn.addEventListener("click", () => {
     if (isPlaying || questionIndex === 0 || questionIndex > TOTAL_QUESTIONS) return;
-    playAudioElement(INPUT_FILES["HINT_R"] || "default_hint_r.mp3", true).then(() => {
-        return playAudioElement("hint_r_sound.mp3");
+    playAudioElement(INPUT_FILES["HINT_R"], true).then(() => {
+        // hint_r.mp3 の後に hint.mp3 のみを再生
+        return playAudioElement("hint.mp3");
     }).catch(e => console.error("Hint R audio failed:", e));
 });
 
-// ランキングボタン
 if (rankingBtn) rankingBtn.addEventListener("click", () => {
     if (isPlaying) return;
     playAudioElement(INPUT_FILES["RANKING"], true).catch(e => console.error("Input audio failed", e));
     
-    // ランキングモーダルを表示 (ランキング表示ロジックは省略)
+    if (rankingList) rankingList.innerHTML = `
+        <p>（ランキング機能は現在開発中です）</p>
+        <p>1位: 9.9（ダミー）</p>
+        <p>2位: 9.8（ダミー）</p>
+    `;
     if (rankingWrap) {
         rankingWrap.style.display = 'flex';
         rankingWrap.setAttribute('aria-hidden', 'false');
-        // FireStoreの取得処理など...
     }
 });
 
-// ランキングを閉じるボタン
 if (closeRankingBtn) closeRankingBtn.addEventListener("click", () => {
     playAudioElement(INPUT_FILES["CLOSE"], true).catch(e => console.error("Input audio failed", e));
     if (rankingWrap) {
@@ -240,7 +406,6 @@ if (closeRankingBtn) closeRankingBtn.addEventListener("click", () => {
     }
 });
 
-// ルールを閉じるボタン
 if (closeRuleBtn) closeRuleBtn.addEventListener("click", () => {
     playAudioElement(INPUT_FILES["CLOSE"], true).catch(e => console.error("Input audio failed", e));
     if (ruleWrap) {
@@ -249,8 +414,6 @@ if (closeRuleBtn) closeRuleBtn.addEventListener("click", () => {
     }
 });
 
-
-// テンキーボタンと確定ボタンのイベントリスナー
 if (inputKeys) inputKeys.forEach(btn => {
     btn.addEventListener("click", () => {
         if (isPlaying) return;
@@ -259,6 +422,59 @@ if (inputKeys) inputKeys.forEach(btn => {
     });
 });
 
-// ... (省略: キーボード入力のイベントリスナー、handleKeyInput関数)
-// 起動時の初期化
+document.addEventListener("keydown", (e)=>{
+    const key = e.key;
+    if (nameInput && document.activeElement === nameInput) {
+        if (key === "Enter") {
+            e.preventDefault(); 
+            handleNameSubmit();
+        }
+        return;
+    }
+    
+    if (["0","1","2","3","4","5","6","7","8","9",".", "c", "C"].includes(key)){
+        handleKeyInput(key.toUpperCase());
+    } 
+    else if (key === "Enter"){
+        if (questionIndex > 0 && questionIndex <= TOTAL_QUESTIONS) confirmAnswer();
+    }
+});
+
+
+function handleKeyInput(k) {
+    if (questionIndex === 0 || questionIndex > TOTAL_QUESTIONS) return;
+
+    if (k === "ENTER") {
+        confirmAnswer();
+        return;
+    }
+
+    if (k === "C") {
+        playerInput = ""; 
+        const inputFilename = INPUT_FILES["C"];
+        if (inputFilename) {
+            playAudioElement(inputFilename, true).catch(e => console.error("Input audio failed", e)); 
+        }
+    } 
+    else {
+        if (!isNaN(parseInt(k))) {
+            if (playerInput.length < 3 || (playerInput.includes('.') && playerInput.length < 5)) {
+                playerInput += k;
+            }
+        } 
+        else if (k === ".") {
+            if (!playerInput.includes('.') && playerInput.length > 0 && playerInput.length < 3) {
+                playerInput += k;
+            }
+        }
+        
+        const inputFilename = INPUT_FILES[k];
+        if (inputFilename) {
+            playAudioElement(inputFilename, true).catch(e => console.error("Input audio failed", e)); 
+        }
+    }
+
+    updateUI();
+}
+
 document.addEventListener("DOMContentLoaded", updateUI);
