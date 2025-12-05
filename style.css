@@ -238,3 +238,99 @@ footer.credits a:hover{text-decoration:underline}
   #kgbalogo{height:38px}
   .monlogo img{height:20px;}
 }
+/* 決定ボタンのスタイル (確定ボタン) */
+#keypad button.confirm {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    font-size: 1.1rem;
+    
+    /* ↓↓↓ 文字の間隔と配置を調整 ↓↓↓ */
+    letter-spacing: 0.5em; /* 文字と文字の間隔を広げる */
+    display: flex; /* Flexboxを有効にする */
+    justify-content: center; /* テキストをボタン内で中央揃えにする */
+    align-items: center; /* 垂直方向にも中央揃えにする */
+}
+/* ------------------------------------------------ */
+/* ★ テンキーの配置とボタンのスタイリング (前回追加分) */
+/* ------------------------------------------------ */
+
+/* テンキー全体を中央寄せにするコンテナ */
+#keypadWrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    padding: 0 10px; /* 画面端との余白 */
+    max-width: 500px; /* 最大幅を設定してPCでの表示崩れを防ぐ */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* テンキーグリッドのコンテナ */
+#keypad {
+    display: grid;
+    /* 3つの等しい幅のカラムを定義 */
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 10px; /* ボタン間の間隔 */
+    width: 100%; /* 親要素の幅いっぱいに広げる */
+}
+
+/* 通常のキーボタンのスタイル */
+.key, .confirm {
+    padding: 20px 10px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border: 2px solid #555;
+    border-radius: 12px;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.1s;
+    box-shadow: 0 4px 0 #bbb; /* ボタンの立体感 */
+}
+
+/* キーボタンのホバー/アクティブ時 */
+.key:hover, .confirm:hover {
+    background-color: #e0e0e0;
+}
+.key:active, .confirm:active {
+    box-shadow: 0 2px 0 #999;
+    transform: translateY(2px);
+}
+
+/* クリアボタン (C) のスタイル */
+.key.clear {
+    background-color: #f4d0a9; /* 薄いオレンジ */
+    border-color: #d8964d;
+    color: #444;
+}
+.key.clear:active {
+    box-shadow: 0 2px 0 #d8964d;
+}
+
+/* 確定ボタンのスタイル */
+.confirm {
+    /* 確定ボタンはグリッドの開始位置から3カラム全てを占める */
+    grid-column: 1 / span 3;
+    padding: 15px 10px;
+    background-color: #a9f4c3; /* 薄いグリーン */
+    border-color: #4da96c;
+    color: #000;
+    /* 文字の間隔を広げて「確 定」と見えるように調整 */
+    letter-spacing: 0.5em; 
+}
+.confirm:active {
+    box-shadow: 0 2px 0 #4da96c;
+}
+
+/* スタートボタン（.accent クラス）の目立つスタイル */
+#startBtn.accent {
+    background-color: #e63946; /* 赤色系 */
+    color: white;
+    font-weight: bold;
+    border-color: #a41724;
+    box-shadow: 0 5px 0 #a41724;
+    font-size: 1.2rem;
+}
+#startBtn.accent:active {
+    box-shadow: 0 2px 0 #a41724;
+    transform: translateY(3px);
+}

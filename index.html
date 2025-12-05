@@ -9,14 +9,15 @@
 <body>
 
 <main>
+    <!-- 1. header (メインコンテンツの一部) -->
     <header class="top">
       <a href="https://goalball-kanagawa.org/" target="_blank" rel="noopener noreferrer">
         <img id="kgbalogo" src="kgbalogo.png" alt="KGBAロゴ" />
       </a>
       <h1>ゴールボールサーチゲーム</h1>
     </header>
-</main>
 
+    <!-- 2. controls (すべてmainタグの中に移動) -->
     <section class="controls control-row-1" aria-label="情報確認" role="region">
       <button id="ruleBtn" aria-label="ルール" type="button">ルール</button>
       <button id="checkBtn" aria-label="イヤホンの左右の確認" type="button">イヤホンの左右の確認</button>
@@ -32,12 +33,14 @@
       <button id="stopBtn" aria-label="再生停止" type="button">再生停止</button>
     </section>
 
+    <!-- 3. status -->
     <section id="status" role="status" aria-live="polite">
       <div id="questionLabel">ようこそ！スタートボタンを押して下さい。</div>
       <div id="currentInput">あなたの回答：なし</div>
       <div id="result"></div>
     </section>
 
+    <!-- 4. keypadWrap (テンキーのボタン構造を修正) -->
     <section id="keypadWrap" aria-label="数字入力" role="region" style="display:none;">
       <div id="keypad" role="group" aria-label="数字入力パッド">
         <button class="key" data-key="7" type="button">7</button>
@@ -54,14 +57,16 @@
         
         <button class="key" data-key="0" type="button">0</button>
         <button class="key" data-key="." type="button">.</button>
-        <button class="confirm" data-key="Enter" type="button">決定</button>
-
-        <button class="key clear full-width" data-key="C" type="button">C</button>
+        <button class="key clear" data-key="C" type="button">クリア</button>
+        
+        <!-- 確定ボタンをフル幅にし、文字の間を空けるためにCSSで調整 -->
+        <button class="confirm full-width" data-key="Enter" type="button">確定</button>
       </div>
     </section>
 
+    <!-- 5. postGameControls, retryWrap, rankingWrap (すべてmainタグの中に移動) -->
     <div id="postGameControls" style="display:none;">
-      </div>
+    </div>
     
     <section id="retryWrap" style="display:none;" aria-hidden="true" role="region" aria-label="再挑戦">
       <div id="scoreDisplay" aria-live="polite"></div>
@@ -77,9 +82,10 @@
     
     <div id="a11yStatus" class="sr-only" aria-live="assertive"></div>
     
-  </main>
+</main> <!-- ★正しい main の閉じタグ -->
 
   <footer class="credits" role="contentinfo">
+    <!-- ... footer の内容は変更なし ... -->
    <div class="footer-content">
       © ゴールボールサーチゲームプロジェクト<br />
       企画・制作：<a href="https://goalball-kanagawa.org/" target="_blank" rel="noopener noreferrer">KGBA</a> ＆ <a id="monLink" href="https://sites.google.com/view/kgba-tochigi/" target="_blank"
@@ -98,22 +104,22 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
 <script>
-    // ★★★ あなたの firebaseConfig の値 ★★★
-    const firebaseConfig = {
-      apiKey: "AIzaSyDwBUd2D1Mt8HlZbh9Mvpi95JP6P0F7S7E",
-      authDomain: "gsranking.firebaseapp.com",
-      projectId: "gsranking",
-      storageBucket: "gsranking.firebasestorage.app",
-      messagingSenderId: "876090875752",
-      appId: "1:876090875752:web:7841b486506842230ec0dd",
-      measurementId: "G-M1Y9F13D2E"
-    };
+    // ★★★ あなたの firebaseConfig の値 ★★★
+    const firebaseConfig = {
+      apiKey: "AIzaSyDwBUd2D1Mt8HlZbh9Mvpi95JP6P0F7S7E",
+      authDomain: "gsranking.firebaseapp.com",
+      projectId: "gsranking",
+      storageBucket: "gsranking.firebasestorage.app",
+      messagingSenderId: "876090875752",
+      appId: "1:876090875752:web:7841b486506842230ec0dd",
+      measurementId: "G-M1Y9F13D2E"
+    };
 
-    // Firebaseの初期化（この app と db オブジェクトを script.js から使います）
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore(); 
+    // Firebaseの初期化（この app と db オブジェクトを script.js から使います）
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore(); 
 </script>
 
- <script src="script_v2.js" defer></script>
+ <script src="script_v2.js" defer></script>
 </body>
 </html>
