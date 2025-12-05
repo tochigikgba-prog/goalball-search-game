@@ -1,25 +1,136 @@
-/* ------------------------------------------------ */
-/* ★ テンキーの配置とボタンのスタイリング (前回追加分) */
-/* ------------------------------------------------ */
+/* style.css - UD/UX & スマホ対応修正版 */
 
-/* テンキー全体を中央寄せにするコンテナ */
-#keypadWrap {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-    padding: 0 10px; /* 画面端との余白 */
-    max-width: 500px; /* 最大幅を設定してPCでの表示崩れを防ぐ */
-    margin-left: auto;
-    margin-right: auto;
+:root{
+  /* UD/UXカラー設定 */
+  --bg: #000000;          /* 黒 */
+  --text: #FFFFFF;        /* 白 */
+  --accent: #FFC000;      /* 明るい黄色 (UD重視) */
+  --accent-contrast: #000000; /* 黒 */
+  --danger: #FF3B30;      /* 再生停止など */
+  --high-contrast-bg: #111111;
+  --button-padding:14px 20px;
+  --btn-radius:10px;
+  --gap:16px;
 }
 
-/* テンキーグリッドのコンテナ */
-#keypad {
-    display: grid;
-    /* 修正: 4列構成に戻す (数字3列 + 確定ボタン1列) */
-    grid-template-columns: repeat(3, 1fr) 1.5fr; /* 4列目を確定ボタン用に追加 */
-    gap: 10px; /* ボタン間の間隔 */
-    width: 100%; /* 親要素の幅いっぱいに広げる */
+/* 全体 */
+html,body{
+    height:100%;
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    /* 視覚障害者が読みやすいUD系フォントを優先 */
+    font-family: "Noto Sans CJK JP", "Hiragino Kaku Gothic ProN", "BIZ UDPGothic", "Meiryo UI", sans-serif;
+    font-size: 18px; /* 基本フォントサイズをやや大きめに */
+}
+
+/* メインコンテナ */
+main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+}
+
+/* ヘッダーのスタイル (ロゴとタイトル) */
+.top {
+    display: flex;
+    align-items: center; /* 垂直方向の中央揃え */
+    justify-content: flex-start; /* 左寄せ */
+    width: 100%;
+    padding: var(--gap) 0;
+    margin-bottom: var(--gap);
+    border-bottom: 2px solid var(--accent); /* 区切り線 */
+}
+
+/* ロゴ画像の調整 */
+#kgbalogo {
+    height: 40px; /* PCでの高さ */
+    margin-right: var(--gap);
+}
+
+/* タイトルの文字スタイル */
+.top h1 {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--accent);
+    margin: 0;
+    line-height: 1.2;
+}
+
+/* メッセージ表示エリア */
+#result {
+    min-height: 2em;
+    font-size: 1.2rem;
+    margin-bottom: var(--gap);
+    color: var(--text);
+}
+
+/* 問題とスコアの表示 */
+#questionLabel, #scoreDisplay {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--accent);
+    margin: 8px 0;
+}
+
+/* 現在の入力値 */
+#currentInput {
+    font-size: 4rem; 
+    font-weight: 700;
+    color: var(--accent); 
+    background-color: var(--high-contrast-bg);
+    padding: 10px 20px;
+    border-radius: var(--btn-radius);
+    min-width: 200px; /* 入力なし時の最低幅 */
+    text-align: center;
+    margin: var(--gap) 0;
+}
+
+/* コントロールボタンセクション */
+.controls {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    max-width: 500px; /* ボタンの横幅制限 */
+    margin-bottom: var(--gap);
+}
+
+.controls button {
+    flex-grow: 1; /* ボタンの幅を均等に広げる */
+    margin: 0 5px;
+    padding: var(--button-padding);
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: 2px solid var(--accent);
+    border-radius: var(--btn-radius);
+    background-color: #333333;
+    color: var(--text);
+    cursor: pointer;
+    transition: background-color 0.1s;
+    box-shadow: 0 4px 0 #111111; 
+}
+.controls button:active {
+    box-shadow: 0 2px 0 #000000;
+    transform: translateY(2px);
+    background-color: #222222;
+}
+
+/* キーパッド */
+#keypadWrap {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px; 
+    margin-top: var(--gap);
+}
+.keypad {
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 10px; 
+    width: 100%; 
 }
 
 /* 通常のキーボタンのスタイル */
@@ -27,59 +138,148 @@
     padding: 20px 10px;
     font-size: 1.5rem;
     font-weight: bold;
-    border: 2px solid #555;
-    border-radius: 12px;
-    background-color: #f0f0f0;
+    border: 2px solid var(--accent);
+    border-radius: var(--btn-radius);
+    background-color: #333333;
+    color: var(--text);
     cursor: pointer;
     transition: background-color 0.1s;
-    box-shadow: 0 4px 0 #bbb; /* ボタンの立体感 */
+    box-shadow: 0 4px 0 #111111; 
 }
 
 /* キーボタンのホバー/アクティブ時 */
-.key:hover, .confirm:hover {
-    background-color: #e0e0e0;
-}
 .key:active, .confirm:active {
-    box-shadow: 0 2px 0 #999;
+    box-shadow: 0 2px 0 #000000;
     transform: translateY(2px);
+    background-color: #222222;
 }
 
 /* クリアボタン (C) のスタイル */
 .key.clear {
-    background-color: #f4d0a9; /* 薄いオレンジ */
-    border-color: #d8964d;
-    color: #444;
+    background-color: #777777; 
+    border-color: #AAAAAA;
+    color: var(--text);
 }
 .key.clear:active {
-    box-shadow: 0 2px 0 #d8964d;
+    background-color: #666666;
+    box-shadow: 0 2px 0 #000000;
 }
 
-/* 確定ボタンのスタイル */
-.confirm {
-    /* 修正: 4列目（右端）を、1行目から5行目（全ボタン）まで縦に占めるように変更 */
-    grid-column: 4 / 5;
-    grid-row: 1 / 5;
-    padding: 15px 10px; /* 縦長になるため、パディングを調整 */
-    background-color: #a9f4c3; /* 薄いグリーン */
-    border-color: #4da96c;
-    color: #000;
-    /* 文字の間隔を広げて「確 定」と見えるように調整 */
-    letter-spacing: 0.5em; 
-}
-.confirm:active {
-    box-shadow: 0 2px 0 #4da96c;
+/* 確定ボタン */
+.confirm.enter {
+    grid-column: span 2; /* 幅を2倍に */
+    background-color: var(--accent);
+    color: var(--accent-contrast);
+    border-color: #E0A000;
 }
 
-/* スタートボタン（.accent クラス）の目立つスタイル */
-#startBtn.accent {
-    background-color: #e63946; /* 赤色系 */
-    color: white;
+/* モーダル/ランキング/ルール画面 */
+#rankingWrap, #ruleWrap, #nameInputWrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: none; 
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 20px;
+    z-index: 1000;
+}
+.modal-content {
+    background: var(--high-contrast-bg);
+    color: var(--text);
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 90%;
+    max-height: 90%;
+    overflow-y: auto;
+    border: 2px solid var(--accent);
+}
+.modal-content h2 {
+    color: var(--accent);
+    border-bottom: 2px solid var(--text);
+    padding-bottom: 10px;
+}
+.modal-content button {
+    margin-top: 20px;
+    background-color: var(--danger);
+    color: var(--text);
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--btn-radius);
     font-weight: bold;
-    border-color: #a41724;
-    box-shadow: 0 5px 0 #a41724;
-    font-size: 1.2rem;
+    cursor: pointer;
 }
-#startBtn.accent:active {
-    box-shadow: 0 2px 0 #a41724;
-    transform: translateY(3px);
+
+/* 名前入力欄 */
+#nameInput {
+    padding: 10px;
+    font-size: 1.2rem;
+    width: 80%;
+    max-width: 300px;
+    margin: 10px 0;
+    background-color: var(--high-contrast-bg);
+    color: var(--text);
+    border: 2px solid var(--accent);
+    border-radius: 5px;
+}
+#nameSubmitBtn {
+    background-color: var(--accent) !important;
+    color: var(--accent-contrast) !important;
+}
+
+/* フッター */
+.credits {
+    width: 100%;
+    max-width: 900px;
+    padding: 10px 0;
+    margin: 20px auto 0;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #888;
+}
+.credits a {
+    color: var(--accent);
+}
+.monlogo img {
+    height: 40px;
+    margin-top: 10px;
+}
+
+
+/* --- スマホ対応 (メディアクエリ) --- */
+@media (max-width: 600px) {
+    main {
+        padding: 16px;
+    }
+    
+    /* ヘッダーのサイズ調整 */
+    .top h1 {
+        font-size: 1.4rem;
+    }
+    #kgbalogo {
+        height: 30px; /* スマホで小さく */
+        margin-right: 10px;
+    }
+    
+    /* ボタンのパディングとフォントを調整して押しやすく */
+    .controls button {
+        padding: 10px 5px;
+        font-size: 1rem;
+    }
+
+    /* キーパッドの数字を大きく */
+    .key, .confirm {
+        padding: 15px 10px;
+        font-size: 1.3rem;
+    }
+    
+    /* 入力表示を調整 */
+    #currentInput {
+        font-size: 3rem;
+        min-width: 150px;
+    }
 }
