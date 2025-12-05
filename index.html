@@ -1,114 +1,98 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>ゴールボールサーチゲーム</title>
-    <link rel="stylesheet" href="style.css">
-    </head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ゴールボールサーチゲーム</title>
+  <link rel="stylesheet" href="style.css">
+</head>
 <body>
 
 <main>
-    <header class="top">
-      <a href="https://goalball-kanagawa.org/" target="_blank" rel="noopener noreferrer">
-        <img id="kgbalogo" src="kgbalogo.png" alt="KGBAロゴ" />
-      </a>
-      <h1>ゴールボールサーチゲーム</h1>
-    </header>
+    <header class="top">
+      <a href="https://goalball-kanagawa.org/" target="_blank" rel="noopener noreferrer">
+        <img id="kgbalogo" src="kgbalogo.png" alt="KGBAロゴ" />
+      </a>
+      <h1>ゴールボールサーチゲーム</h1>
+    </header>
+</main>
 
-    <section class="controls control-row-1" aria-label="情報確認" role="region">
-      <button id="ruleBtn" aria-label="ルール" type="button">ルール</button>
-      <button id="checkBtn" aria-label="イヤホンの左右の確認" type="button">イヤホンの左右の確認</button>
-    </section>
+    <section class="controls control-row-1" aria-label="情報確認" role="region">
+      <button id="ruleBtn" aria-label="ルール" type="button">ルール</button>
+      <button id="checkBtn" aria-label="イヤホンの左右の確認" type="button">イヤホンの左右の確認</button>
+    </section>
 
-    <section class="controls control-row-2" aria-label="ヒント" role="region">
-      <button id="hintBtn" aria-label="ヒント" type="button">ヒント</button>
-      <button id="hintBellBtn" aria-label="ヒント 鈴のみ" aria-pressed="false" type="button">ヒント／鈴のみ</button>
-    </section>
+    <section class="controls control-row-2" aria-label="ヒント" role="region">
+      <button id="hintBtn" aria-label="ヒント" type="button">ヒント</button>
+      <button id="hintBellBtn" aria-label="ヒント 鈴のみ" aria-pressed="false" type="button">ヒント／鈴のみ</button>
+    </section>
 
-    <section class="controls control-row-3" aria-label="ゲーム操作" role="region">
-      <button id="startBtn" class="accent" aria-label="スタート" aria-controls="keypadWrap" aria-expanded="false" type="button">スタート</button>
-      <button id="stopBtn" aria-label="再生停止" type="button">再生停止</button>
-    </section>
+    <section class="controls control-row-3" aria-label="ゲーム操作" role="region">
+      <button id="startBtn" class="accent" aria-label="スタート" aria-controls="keypadWrap" aria-expanded="false" type="button">スタート</button>
+      <button id="stopBtn" aria-label="再生停止" type="button">再生停止</button>
+    </section>
 
-    <section id="status" role="status" aria-live="polite">
-      <div id="questionLabel">ようこそ！スタートボタンを押して下さい。</div>
-      <div id="currentInput">___</div> <div id="result"></div>
-    </section>
+    <section id="status" role="status" aria-live="polite">
+      <div id="questionLabel">ようこそ！スタートボタンを押して下さい。</div>
+      <div id="currentInput">あなたの回答：なし</div>
+      <div id="result"></div>
+    </section>
 
-    <section id="keypadWrap" aria-label="数字入力" role="region" style="display:none;">
-      <div id="keypad" class="keypad" role="group" aria-label="数字入力パッド">
-        <button class="key" data-key="7" type="button">7</button>
-        <button class="key" data-key="8" type="button">8</button>
-        <button class="key" data-key="9" type="button">9</button>
-        
-        <button class="key" data-key="4" type="button">4</button>
-        <button class="key" data-key="5" type="button">5</button>
-        <button class="key" data-key="6" type="button">6</button>
-        
-        <button class="key" data-key="1" type="button">1</button>
-        <button class="key" data-key="2" type="button">2</button>
-        <button class="key" data-key="3" type="button">3</button>
-        
-        <button class="key" data-key="0" type="button">0</button>
-        <button class="key" data-key="." type="button">.</button>
-        <button class="confirm enter" data-key="ENTER" type="button">決定</button> 
+    <section id="keypadWrap" aria-label="数字入力" role="region" style="display:none;">
+      <div id="keypad" role="group" aria-label="数字入力パッド">
+        <button class="key" data-key="7" type="button">7</button>
+        <button class="key" data-key="8" type="button">8</button>
+        <button class="key" data-key="9" type="button">9</button>
+        
+        <button class="key" data-key="4" type="button">4</button>
+        <button class="key" data-key="5" type="button">5</button>
+        <button class="key" data-key="6" type="button">6</button>
+        
+        <button class="key" data-key="1" type="button">1</button>
+        <button class="key" data-key="2" type="button">2</button>
+        <button class="key" data-key="3" type="button">3</button>
+        
+        <button class="key" data-key="0" type="button">0</button>
+        <button class="key" data-key="." type="button">.</button>
+        <button class="confirm" data-key="Enter" type="button">決定</button>
 
-        <button class="key clear" data-key="C" type="button">C</button>
-      </div>
-    </section>
-    
-    <section id="retryWrap" style="display:none;" aria-hidden="true" role="region" aria-label="再挑戦">
-      <div id="scoreDisplay" aria-live="polite"></div>
-      <button id="retryBtn" class="accent" aria-label="再挑戦" type="button">再挑戦</button>
-    </section>
-    
-    <section id="rankingWrap" style="display:none;" aria-hidden="true" role="dialog" aria-modal="true" aria-label="グローバルランキング">
-        <div class="modal-content">
-            <h2>🏆 グローバルランキング</h2>
-            <div id="rankingList">
-                <p>（ランキング機能は現在開発中です）</p>
-                <p>1位: 9.9（ダミー）</p>
-                <p>2位: 9.8（ダミー）</p>
-            </div>
-            <button id="closeRankingBtn" type="button">閉じる</button>
-        </div>
-    </section>
+        <button class="key clear full-width" data-key="C" type="button">C</button>
+      </div>
+    </section>
 
-    <section id="ruleWrap" style="display:none;" aria-hidden="true" role="dialog" aria-modal="true" aria-label="ルール説明">
-        <div class="modal-content">
-            <h2>ルール</h2>
-            <p>音声で流れる数字を聞き取り、テンキーで入力するゲームです。</p>
-            <p>ルール音声はスタートボタンを押したときに流れます。</p>
-            <button id="closeRuleBtn" type="button">閉じる</button>
-        </div>
-    </section>
+    <div id="postGameControls" style="display:none;">
+      </div>
+    
+    <section id="retryWrap" style="display:none;" aria-hidden="true" role="region" aria-label="再挑戦">
+      <div id="scoreDisplay" aria-live="polite"></div>
+      <button id="retryBtn" class="accent" aria-label="再挑戦" type="button">再挑戦</button>
+    </section>
+    
+    <section id="rankingWrap" style="display:none;" aria-hidden="true" role="region" aria-label="グローバルランキング">
+      <h2>🏆 グローバルランキング</h2>
+      <div id="rankingList">
+        </div>
+      <button id="closeRankingBtn" type="button">閉じる</button>
+    </section>
+    
+    <div id="a11yStatus" class="sr-only" aria-live="assertive"></div>
+    
+  </main>
 
-    <section id="nameInputWrap" style="display:none;" aria-hidden="true" role="dialog" aria-modal="true" aria-label="名前入力">
-      <div class="modal-content">
-          <h2>名前を登録</h2>
-          <p>スコアをランキングに登録するために名前を入力してください。</p>
-          <input type="text" id="nameInput" placeholder="お名前">
-          <button id="nameSubmitBtn" type="button">登録する</button>
-      </div>
-    </section>
-
-    <div id="a11yStatus" class="sr-only" aria-live="assertive"></div>
-    
-</main> <footer class="credits" role="contentinfo">
-  <div class="footer-content">
-    © ゴールボールサーチゲームプロジェクト<br />
-    企画・制作：<a href="https://goalball-kanagawa.org/" target="_blank" rel="noopener noreferrer">KGBA</a> ＆ <a id="monLink" href="https://sites.google.com/view/kgba-tochigi/" target="_blank"
-      rel="noopener noreferrer">MON☆Stars</a><br />
-    無断転載・複製・改変を禁じます<br />
-    VOICEVOX: ずんだもん
-  </div>
-  <div class="monlogo">
-    <a href="https://sites.google.com/view/kgba-tochigi/" target="_blank" rel="noopener noreferrer">
-      <img src="monlogo.png" alt="MON☆Stars ロゴ" />
-    </a>
-  </div>
-</footer>
+  <footer class="credits" role="contentinfo">
+   <div class="footer-content">
+      © ゴールボールサーチゲームプロジェクト<br />
+      企画・制作：<a href="https://goalball-kanagawa.org/" target="_blank" rel="noopener noreferrer">KGBA</a> ＆ <a id="monLink" href="https://sites.google.com/view/kgba-tochigi/" target="_blank"
+        rel="noopener noreferrer">MON☆Stars</a><br />
+      無断転載・複製・改変を禁じます<br />
+      VOICEVOX: ずんだもん
+    </div>
+    <div class="monlogo">
+      <a href="https://sites.google.com/view/kgba-tochigi/" target="_blank" rel="noopener noreferrer">
+        <img src="monlogo.png" alt="MON☆Stars ロゴ" />
+      </a>
+    </div>
+  </footer>
 
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -125,11 +109,11 @@
       measurementId: "G-M1Y9F13D2E"
     };
 
-    // Firebaseの初期化（この app と db オブジェクトを script_v2.js から使うことを想定）
+    // Firebaseの初期化（この app と db オブジェクトを script.js から使います）
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore(); 
 </script>
 
-<script src="script_v2.js" defer></script>
+ <script src="script_v2.js" defer></script>
 </body>
 </html>
