@@ -12,7 +12,19 @@
 
 /* 全体 */
 html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Segoe UI", Roboto, "Helvetica Neue", Arial;}
-main{max-width:900px;margin:0 auto;padding:24px;}
+/* 全体 */
+/* ... 省略 ... */
+main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px;
+    
+    /* ↓↓↓ この3行を追記/変更 ↓↓↓ */
+    display: flex; /* 子要素をFlexアイテムにする */
+    flex-direction: column; /* 縦方向に並べる */
+    align-items: center; /* 子要素を中央揃えにする */
+}
+/* ... 省略 ... */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
 
 /* header */
@@ -63,8 +75,16 @@ h1{font-size:1.6rem;color:var(--accent);margin:0;}
 
 
 /* keypadWrap */
-#keypadWrap{display:flex;justify-content:center;margin:var(--gap) 0;}
+/* keypadWrap */
+#keypadWrap {
+    display: flex;
+    justify-content: center; /* キーパッド全体を中央に配置 */
+    /* ↓↓↓ 変更 ↓↓↓ */
+    margin: var(--gap) 0;
+    width: 100%; /* 親要素の幅を使う */
+}
 
+/* keypad: テンキーのデザインを修正 */
 /* keypad: テンキーのデザインを修正 */
 #keypad {
     display: grid;
@@ -72,8 +92,9 @@ h1{font-size:1.6rem;color:var(--accent);margin:0;}
     grid-auto-rows: clamp(64px, 12vw, 80px); /* ボタンの高さを調整 */
     gap: 10px;
     margin-top: var(--gap);
-    max-width: 320px; 
-    width: 90%; 
+    /* ↓↓↓ 変更 ↓↓↓ */
+    max-width: 320px; /* 最大幅を固定 */
+    width: 100%; /* 常に親のkeypadWrapに対して100%を占める */
 }
 
 #keypad button {
