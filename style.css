@@ -1,4 +1,4 @@
-/* style.css - UD/UX & スマホ対応修正版 */
+/* style.css - UD/UX & スマホ対応修正版 (ロゴリンク修正済み) */
 
 :root{
   /* UD/UXカラー設定 */
@@ -37,17 +37,28 @@ main {
 /* ヘッダーのスタイル (ロゴとタイトル) */
 .top {
     display: flex;
-    align-items: center; /* 垂直方向の中央揃え */
-    justify-content: flex-start; /* 左寄せ */
+    align-items: center; 
+    justify-content: flex-start; 
     width: 100%;
     padding: var(--gap) 0;
     margin-bottom: var(--gap);
-    border-bottom: 2px solid var(--accent); /* 区切り線 */
+    border-bottom: 2px solid var(--accent); 
 }
+
+/* ★★★ ロゴリンクの修正ここから ★★★ */
+.top a {
+    text-decoration: none; /* リンクの青い下線を完全に削除 */
+    /* リンクの下にできるわずかな隙間（ベースラインの余白）を排除 */
+    line-height: 0; 
+}
+.top a img {
+    display: block; /* 画像をブロック要素にして、インライン要素特有の余白を削除 */
+}
+/* ★★★ ロゴリンクの修正ここまで ★★★ */
 
 /* ロゴ画像の調整 */
 #kgbalogo {
-    height: 40px; /* PCでの高さ */
+    height: 40px; 
     margin-right: var(--gap);
 }
 
@@ -84,7 +95,7 @@ main {
     background-color: var(--high-contrast-bg);
     padding: 10px 20px;
     border-radius: var(--btn-radius);
-    min-width: 200px; /* 入力なし時の最低幅 */
+    min-width: 200px; 
     text-align: center;
     margin: var(--gap) 0;
 }
@@ -94,12 +105,12 @@ main {
     display: flex;
     justify-content: space-around;
     width: 100%;
-    max-width: 500px; /* ボタンの横幅制限 */
+    max-width: 500px; 
     margin-bottom: var(--gap);
 }
 
 .controls button {
-    flex-grow: 1; /* ボタンの幅を均等に広げる */
+    flex-grow: 1; 
     margin: 0 5px;
     padding: var(--button-padding);
     font-size: 1.1rem;
@@ -167,7 +178,7 @@ main {
 
 /* 確定ボタン */
 .confirm.enter {
-    grid-column: span 2; /* 幅を2倍に */
+    grid-column: span 2; 
     background-color: var(--accent);
     color: var(--accent-contrast);
     border-color: #E0A000;
@@ -261,7 +272,7 @@ main {
         font-size: 1.4rem;
     }
     #kgbalogo {
-        height: 30px; /* スマホで小さく */
+        height: 30px; 
         margin-right: 10px;
     }
     
