@@ -1,296 +1,151 @@
-/* style.css - UD/UX & スマホ対応修正版 (ロゴリンク修正済み) */
-
-:root{
-  /* UD/UXカラー設定 */
-  --bg: #000000;          /* 黒 */
-  --text: #FFFFFF;        /* 白 */
-  --accent: #FFC000;      /* 明るい黄色 (UD重視) */
-  --accent-contrast: #000000; /* 黒 */
-  --danger: #FF3B30;      /* 再生停止など */
+/* style.css */
+:root {
+  --bg: #000000;
+  --text: #FFFFFF;
+  --accent: #FFC000; /* 作成された枠の色に合わせた黄色 */
+  --accent-contrast: #000000;
+  --danger: #FF3B30;
   --high-contrast-bg: #111111;
-  --button-padding:14px 20px;
-  --btn-radius:10px;
-  --gap:16px;
+  --btn-radius: 12px;
 }
 
-/* 全体 */
-html,body{
-    height:100%;
-    margin:0;
-    background:var(--bg);
-    color:var(--text);
-    /* 視覚障害者が読みやすいUD系フォントを優先 */
-    font-family: "Noto Sans CJK JP", "Hiragino Kaku Gothic ProN", "BIZ UDPGothic", "Meiryo UI", sans-serif;
-    font-size: 18px; /* 基本フォントサイズをやや大きめに */
-}
-
-/* メインコンテナ */
-main {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 24px;
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-}
-
-/* ヘッダーのスタイル (ロゴとタイトル) */
-.top {
-    display: flex;
-    align-items: center; 
-    justify-content: flex-start; 
-    width: 100%;
-    padding: var(--gap) 0;
-    margin-bottom: var(--gap);
-    border-bottom: 2px solid var(--accent); 
-}
-
-/* ★★★ ロゴリンクの修正ここから ★★★ */
-.top a {
-    text-decoration: none; /* リンクの青い下線を完全に削除 */
-    /* リンクの下にできるわずかな隙間（ベースラインの余白）を排除 */
-    line-height: 0; 
-}
-.top a img {
-    display: block; /* 画像をブロック要素にして、インライン要素特有の余白を削除 */
-}
-/* ★★★ ロゴリンクの修正ここまで ★★★ */
-
-/* ロゴ画像の調整 */
-#kgbalogo {
-    height: 40px; 
-    margin-right: var(--gap);
-}
-
-/* タイトルの文字スタイル */
-.top h1 {
-    font-size: 1.8rem;
-    font-weight: 900;
-    color: var(--accent);
+body {
     margin: 0;
-    line-height: 1.2;
-}
-
-/* メッセージ表示エリア */
-#result {
-    min-height: 2em;
-    font-size: 1.2rem;
-    margin-bottom: var(--gap);
+    background: var(--bg);
     color: var(--text);
-}
-
-/* 問題とスコアの表示 */
-#questionLabel, #scoreDisplay {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: var(--accent);
-    margin: 8px 0;
-}
-
-/* 現在の入力値 */
-#currentInput {
-    font-size: 4rem; 
-    font-weight: 700;
-    color: var(--accent); 
-    background-color: var(--high-contrast-bg);
-    padding: 10px 20px;
-    border-radius: var(--btn-radius);
-    min-width: 200px; 
+    font-family: "BIZ UDPGothic", "Meiryo UI", sans-serif;
     text-align: center;
-    margin: var(--gap) 0;
+    line-height: 1.5;
 }
 
-/* コントロールボタンセクション */
-.controls {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-    max-width: 500px; 
-    margin-bottom: var(--gap);
+main {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 15px;
 }
 
-.controls button {
-    flex-grow: 1; 
-    margin: 0 5px;
-    padding: var(--button-padding);
-    font-size: 1.1rem;
-    font-weight: bold;
-    border: 2px solid var(--accent);
-    border-radius: var(--btn-radius);
-    background-color: #333333;
-    color: var(--text);
-    cursor: pointer;
-    transition: background-color 0.1s;
-    box-shadow: 0 4px 0 #111111; 
-}
-.controls button:active {
-    box-shadow: 0 2px 0 #000000;
-    transform: translateY(2px);
-    background-color: #222222;
-}
-
-/* キーパッド */
-#keypadWrap {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 400px; 
-    margin-top: var(--gap);
-}
-.keypad {
-    display: grid; 
-    grid-template-columns: repeat(3, 1fr); 
-    gap: 10px; 
-    width: 100%; 
-}
-
-/* 通常のキーボタンのスタイル */
-.key, .confirm {
-    padding: 20px 10px;
-    font-size: 1.5rem;
-    font-weight: bold;
-    border: 2px solid var(--accent);
-    border-radius: var(--btn-radius);
-    background-color: #333333;
-    color: var(--text);
-    cursor: pointer;
-    transition: background-color 0.1s;
-    box-shadow: 0 4px 0 #111111; 
-}
-
-/* キーボタンのホバー/アクティブ時 */
-.key:active, .confirm:active {
-    box-shadow: 0 2px 0 #000000;
-    transform: translateY(2px);
-    background-color: #222222;
-}
-
-/* クリアボタン (C) のスタイル */
-.key.clear {
-    background-color: #777777; 
-    border-color: #AAAAAA;
-    color: var(--text);
-}
-.key.clear:active {
-    background-color: #666666;
-    box-shadow: 0 2px 0 #000000;
-}
-
-/* 確定ボタン */
-.confirm.enter {
-    grid-column: span 2; 
-    background-color: var(--accent);
-    color: var(--accent-contrast);
-    border-color: #E0A000;
-}
-
-/* モーダル/ランキング/ルール画面 */
-#rankingWrap, #ruleWrap, #nameInputWrap {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.9);
-    display: none; 
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    padding: 20px;
-    z-index: 1000;
-}
-.modal-content {
-    background: var(--high-contrast-bg);
-    color: var(--text);
-    padding: 30px;
-    border-radius: 15px;
-    max-width: 90%;
-    max-height: 90%;
-    overflow-y: auto;
-    border: 2px solid var(--accent);
-}
-.modal-content h2 {
-    color: var(--accent);
-    border-bottom: 2px solid var(--text);
-    padding-bottom: 10px;
-}
-.modal-content button {
-    margin-top: 20px;
-    background-color: var(--danger);
-    color: var(--text);
-    border: none;
-    padding: 10px 20px;
-    border-radius: var(--btn-radius);
-    font-weight: bold;
-    cursor: pointer;
-}
-
-/* 名前入力欄 */
-#nameInput {
-    padding: 10px;
-    font-size: 1.2rem;
-    width: 80%;
-    max-width: 300px;
-    margin: 10px 0;
-    background-color: var(--high-contrast-bg);
-    color: var(--text);
-    border: 2px solid var(--accent);
-    border-radius: 5px;
-}
-#nameSubmitBtn {
-    background-color: var(--accent) !important;
-    color: var(--accent-contrast) !important;
-}
-
-/* フッター */
-.credits {
-    width: 100%;
-    max-width: 900px;
-    padding: 10px 0;
-    margin: 20px auto 0;
-    text-align: center;
-    font-size: 0.8rem;
-    color: #888;
-}
-.credits a {
+header h1 {
+    font-size: 1.4rem;
     color: var(--accent);
 }
-.monlogo img {
-    height: 40px;
+
+#kgbalogo {
+    height: 50px;
     margin-top: 10px;
 }
 
+/* コントロールボタン（ルール・ヒントなど） */
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    justify-content: center;
+}
 
-/* --- スマホ対応 (メディアクエリ) --- */
-@media (max-width: 600px) {
-    main {
-        padding: 16px;
-    }
-    
-    /* ヘッダーのサイズ調整 */
-    .top h1 {
-        font-size: 1.4rem;
-    }
-    #kgbalogo {
-        height: 30px; 
-        margin-right: 10px;
-    }
-    
-    /* ボタンのパディングとフォントを調整して押しやすく */
-    .controls button {
-        padding: 10px 5px;
-        font-size: 1rem;
-    }
+.controls button {
+    flex: 1;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: var(--btn-radius);
+    border: 2px solid var(--accent);
+    background: var(--high-contrast-bg);
+    color: var(--text);
+    cursor: pointer;
+}
 
-    /* キーパッドの数字を大きく */
-    .key, .confirm {
-        padding: 15px 10px;
-        font-size: 1.3rem;
-    }
-    
-    /* 入力表示を調整 */
-    #currentInput {
-        font-size: 3rem;
-        min-width: 150px;
-    }
+#stopBtn {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+/* キーパッド：3列のグリッドレイアウト */
+.keypad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 20px auto;
+}
+
+.key {
+    position: relative;
+    background: none;
+    border: none;
+    padding: 0;
+    aspect-ratio: 1 / 1; /* 正方形を維持 */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 枠画像（土台） */
+.btn-frame {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* 数字画像（中央に浮かせる） */
+.btn-number {
+    position: absolute;
+    width: 75%; /* 枠より少し小さくして余白を作る */
+    height: auto;
+    pointer-events: none; /* クリックの邪魔をしない */
+}
+
+/* テキストボタン（クリア・決定） */
+.text-btn {
+    background-color: var(--high-contrast-bg);
+    border: 3px solid var(--accent);
+    border-radius: var(--btn-radius);
+    color: var(--accent);
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+/* 視覚的なフィードバック（弱視の方・PC操作用） */
+.key:focus {
+    outline: 4px solid #fff;
+    outline-offset: 2px;
+}
+
+.key:active {
+    opacity: 0.7;
+    transform: scale(0.95);
+}
+
+/* ステータス・回答表示エリア */
+.status-area {
+    font-size: 1.5rem;
+    margin: 20px 0;
+    min-height: 2em;
+    padding: 10px;
+    background: var(--high-contrast-bg);
+    border-radius: 10px;
+}
+
+#currentInput {
+    color: var(--accent);
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+/* スクリーンリーダー専用（画面には出さない） */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    border: 0;
+}
+
+footer {
+    margin-top: 30px;
+    padding: 20px;
+    font-size: 0.8rem;
+    color: #aaa;
 }
