@@ -59,12 +59,19 @@ header h1 {
     color: var(--danger);
 }
 
-/* キーパッド：3列のグリッドレイアウト */
+/* キーパッドの基本設定 */
 .keypad-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+    gap: 15px; /* スマホでは指の重なりを防ぐため広めに設定 */
     margin: 20px auto;
+}
+
+@media screen and (min-width: 601px) {
+    .keypad-grid {
+        gap: 8px; /* PCではコンパクトに */
+        max-width: 300px;
+    }
 }
 
 .key {
