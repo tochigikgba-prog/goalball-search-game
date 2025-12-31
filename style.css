@@ -1,12 +1,12 @@
 /* style.css */
 :root {
-  --bg: #000000;
-  --text: #FFFFFF;
-  --accent: #FFC000; /* 作成された枠の色に合わせた黄色 */
-  --accent-contrast: #000000;
-  --danger: #FF3B30;
-  --high-contrast-bg: #111111;
-  --btn-radius: 12px;
+    --bg: #000000;
+    --text: #FFFFFF;
+    --accent: #FFC000; 
+    --accent-contrast: #000000;
+    --danger: #FF3B30;
+    --high-contrast-bg: #111111;
+    --btn-radius: 12px;
 }
 
 body {
@@ -19,7 +19,7 @@ body {
 }
 
 main {
-    max-width: 600px;
+    max-width: 800px; /* PCでの表示幅を少し広げました */
     margin: 0 auto;
     padding: 15px;
 }
@@ -34,21 +34,21 @@ header h1 {
     margin-top: 10px;
 }
 
-/* コントロールボタン（ルール・ヒントなど） */
-.controls {
+/* --- コントロールボタン・スタートボタン --- */
+.controls, .start-section {
     display: flex;
     gap: 10px;
     margin-bottom: 10px;
     justify-content: center;
 }
 
-.controls button {
+.controls button, .start-section button {
     flex: 1;
-    padding: 12px;
-    font-size: 1rem;
+    padding: 15px; /* スタートボタン等は少し厚めに */
+    font-size: 1.1rem;
     font-weight: bold;
     border-radius: var(--btn-radius);
-    border: 2px solid var(--accent);
+    border: 3px solid var(--accent);
     background: var(--high-contrast-bg);
     color: var(--text);
     cursor: pointer;
@@ -59,46 +59,60 @@ header h1 {
     color: var(--danger);
 }
 
-/* キーパッドの基本設定 */
+#startBtn {
+    background-color: var(--accent);
+    color: var(--bg); /* スタートボタンを一番目立たせる */
+}
+
+/* --- キーパッド基本（スマホ：3列） --- */
 .keypad-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 15px; /* スマホでは指の重なりを防ぐため広めに設定 */
+    gap: 12px;
     margin: 20px auto;
+    max-width: 400px;
 }
 
-@media screen and (min-width: 601px) {
+/* PC：画面幅が600px以上なら横長（6列）にする */
+@media screen and (min-width: 600px) {
     .keypad-grid {
-        gap: 8px; /* PCではコンパクトに */
-        max-width: 300px;
+        grid-template-columns: repeat(6, 1fr); 
+        max-width: 700px;
     }
 }
 
+/* 決定ボタン：常に横いっぱいに広げる設定 */
+.key[data-key="Enter"] {
+    grid-column: 1 / -1; /* スマホなら3列分、PCなら6列分ぶち抜く */
+    aspect-ratio: auto !important; /* 正方形を解除 */
+    height: 70px;
+    margin-top: 10px;
+}
+
+/* --- ボタン内の画像・デザイン --- */
 .key {
     position: relative;
     background: none;
     border: none;
     padding: 0;
-    aspect-ratio: 1 / 1; /* 正方形を維持 */
+    aspect-ratio: 1 / 1; 
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-/* 枠画像（土台） */
 .btn-frame {
     width: 100%;
     height: 100%;
     object-fit: contain;
 }
 
-/* 数字画像（中央に浮かせる） */
 .btn-number {
     position: absolute;
-    width: 75%; /* 枠より少し小さくして余白を作る */
+    width: 75%; 
     height: auto;
-    pointer-events: none; /* クリックの邪魔をしない */
+    pointer-events: none; 
 }
 
 /* テキストボタン（クリア・決定） */
@@ -109,9 +123,12 @@ header h1 {
     color: var(--accent);
     font-size: 1.3rem;
     font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* 視覚的なフィードバック（弱視の方・PC操作用） */
+/* --- その他 --- */
 .key:focus {
     outline: 4px solid #fff;
     outline-offset: 2px;
@@ -122,7 +139,6 @@ header h1 {
     transform: scale(0.95);
 }
 
-/* ステータス・回答表示エリア */
 .status-area {
     font-size: 1.5rem;
     margin: 20px 0;
@@ -130,6 +146,7 @@ header h1 {
     padding: 10px;
     background: var(--high-contrast-bg);
     border-radius: 10px;
+    border: 1px solid #333;
 }
 
 #currentInput {
@@ -138,7 +155,6 @@ header h1 {
     letter-spacing: 2px;
 }
 
-/* スクリーンリーダー専用（画面には出さない） */
 .sr-only {
     position: absolute;
     width: 1px;

@@ -26,20 +26,29 @@
       <button id="stopBtn" aria-label="音声を停止" type="button">音声を停止</button>
     </section>
 
-    <section id="keypad" class="keypad-grid" aria-label="回答用キーパッド" role="region">
-      <button class="key" data-key="7" aria-label="7"><img src="frame_outline.png" class="btn-frame"><img src="7.png" class="btn-number"></button>
-      <button class="key" data-key="8" aria-label="8"><img src="frame_outline.png" class="btn-frame"><img src="8.png" class="btn-number"></button>
-      <button class="key" data-key="9" aria-label="9"><img src="frame_outline.png" class="btn-frame"><img src="9.png" class="btn-number"></button>
-      <button class="key" data-key="4" aria-label="4"><img src="frame_outline.png" class="btn-frame"><img src="4.png" class="btn-number"></button>
-      <button class="key" data-key="4.5" aria-label="4.5"><img src="frame_outline.png" class="btn-frame"><img src="4.5.png" class="btn-number"></button>
-      <button class="key" data-key="5" aria-label="5"><img src="frame_outline.png" class="btn-frame"><img src="5.png" class="btn-number"></button>
-      <button class="key" data-key="1" aria-label="1"><img src="frame_outline.png" class="btn-frame"><img src="1.png" class="btn-number"></button>
-      <button class="key" data-key="2" aria-label="2"><img src="frame_outline.png" class="btn-frame"><img src="2.png" class="btn-number"></button>
-      <button class="key" data-key="3" aria-label="3"><img src="frame_outline.png" class="btn-frame"><img src="3.png" class="btn-number"></button>
-      <button class="key text-btn" data-key="C" aria-label="クリア">クリア</button>
-      <button class="key" data-key="0" aria-label="0"><img src="frame_outline.png" class="btn-frame"><img src="0.png" class="btn-number"></button>
-      <button class="key text-btn" data-key="Enter" aria-label="決定">決定</button>
-    </section>
+   <section class="controls start-section" role="region">
+  <button id="startBtn" aria-label="ゲーム開始" style="background-color: var(--accent); color: var(--bg); width: 100%; font-size: 1.5rem; padding: 15px; margin-top: 10px;">スタート</button>
+</section>
+
+<section id="keypad" class="keypad-grid" aria-label="回答用キーパッド" role="region">
+  <button class="key" data-key="0" aria-label="0"><img src="frame_outline.png" class="btn-frame"><img src="0.png" class="btn-number"></button>
+  <button class="key" data-key="1" aria-label="1"><img src="frame_outline.png" class="btn-frame"><img src="1.png" class="btn-number"></button>
+  <button class="key" data-key="2" aria-label="2"><img src="frame_outline.png" class="btn-frame"><img src="2.png" class="btn-number"></button>
+  
+  <button class="key" data-key="3" aria-label="3"><img src="frame_outline.png" class="btn-frame"><img src="3.png" class="btn-number"></button>
+  <button class="key" data-key="4" aria-label="4"><img src="frame_outline.png" class="btn-frame"><img src="4.png" class="btn-number"></button>
+  <button class="key" data-key="4.5" aria-label="4.5"><img src="frame_outline.png" class="btn-frame"><img src="45.png" class="btn-number"></button>
+  
+  <button class="key" data-key="5" aria-label="5"><img src="frame_outline.png" class="btn-frame"><img src="5.png" class="btn-number"></button>
+  <button class="key" data-key="6" aria-label="6"><img src="frame_outline.png" class="btn-frame"><img src="6.png" class="btn-number"></button>
+  <button class="key" data-key="7" aria-label="7"><img src="frame_outline.png" class="btn-frame"><img src="7.png" class="btn-number"></button>
+  
+  <button class="key" data-key="8" aria-label="8"><img src="frame_outline.png" class="btn-frame"><img src="8.png" class="btn-number"></button>
+  <button class="key" data-key="9" aria-label="9"><img src="frame_outline.png" class="btn-frame"><img src="9.png" class="btn-number"></button>
+  <button class="key text-btn" data-key="C" aria-label="クリア">クリア</button>
+  
+  <button class="key text-btn" data-key="Enter" aria-label="決定">決定</button>
+</section>
 
     <div id="status" class="status-area" aria-live="polite">
       回答：<span id="currentInput"></span>
