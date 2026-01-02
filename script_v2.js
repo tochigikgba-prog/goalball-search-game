@@ -1,62 +1,186 @@
-/* script_v2.js - ゴールボールサーチゲーム完全版 */
+/* script_v2.js - ゴールボールサーチゲーム完全版 (Firestore対応) */
 
+// --- 【重要】ここにお手持ちの Firebase Config を貼り付けてください ---
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "gsranking.firebaseapp.com",
+  projectId: "gsranking",
+  storageBucket: "gsranking.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// Firebase初期化 (Firestoreを使用)
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore(); 
+
+// --- 設定・定数 ---
 const SOUND_PATH = "sound/";
+const POSTS = ["0", "1", "2", "3", "4", "4.5", "5", "6", "7", "8", "9"];
 
-// 入力確認・操作用の音声ファイル
+// 音声ファイル割り当て
 const INPUT_FILES = {
   "0":"0.mp3", "1":"1.mp3", "2":"2.mp3", "3":"3.mp3", "4":"4.mp3", "5":"5.mp3",
   "6":"6.mp3", "7":"7.mp3", "8":"8.mp3", "9":"9.mp3", "4.5":"quiz_45.mp3",
   "C":"clear.mp3", "Enter":"confirm.mp3"
 };
 
-// 判定・正解告知用の音声ファイル
-const JUDGE_FILES = {
-  "SUCCESS": "seikai.mp3", //
-  "NO": "no.mp3",          //
-  "ANSWERS": {
-    "0": "answer_0.mp3",   //
-    "1": "answer_1.mp3",   //
-    "2": "answer_2.mp3",   //
-    "3": "answer_3.mp3",   //
-    "4": "answer_4.mp3",   //
-    "4.5": "answer_45.mp3",//
-    "5": "answer_5.mp3",   //
-    "6": "answer_6.mp3",   //
-    "7": "answer_7.mp3",   //
-    "8": "answer_8.mp3",   // 8の音声ファイルがあればここへ
-    "9": "answer_9.mp3"    // 9の音声ファイルがあればここへ
-  }
-};
-
 let playerInput = "";
 let currentAudio = null;
 let isGameStarted = false;
 let currentCorrectAnswer = "";
+let gameMode = "practice"; 
+let score = 0;
 
-// ページ読み込み時の初期化
+// --- 初期化 ---
 document.addEventListener("DOMContentLoaded", () => {
-    // スタートボタンのイベント
     const startBtn = document.getElementById("startBtn");
-    if (startBtn) {
-        startBtn.addEventListener("click", () => {
-            isGameStarted = true;
-            nextQuestion();
-        });
-    }
-
-    // 各数字ボタン（キー）のイベント
-    document.querySelectorAll(".key").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const k = btn.getAttribute("data-key");
-            handleKeyInput(k);
-        });
+    startBtn.addEventListener("click", () => {
+        unlockAudio(); // iOS/Safari対策
+        
+        // モード選択の取得
+        const modeRadio = document.querySelector('input[name="gameMode"]:checked');
+        gameMode = modeRadio ? modeRadio.value : "practice";
+        
+        score = 0;
+        isGameStarted = true;
+        
+        // 画面の表示・非表示
+        document.querySelector(".mode-selection").style.display = "none";
+        startBtn.parentElement.style.display = "none";
+        document.getElementById("rankingArea").style.display = "none";
+        
+        nextQuestion();
     });
 
-    // ヒントボタン：今の問題をもう一度聞く
-    const hintBtn = document.getElementById("hintBtn");
-    if (hintBtn) {
-        hintBtn.addEventListener("click", () => {
-            if (!isGameStarted) return;
-            playQuestionSound(currentCorrectAnswer);
+    // キーパッドボタン
+    document.querySelectorAll(".key").forEach(btn => {
+        btn.addEventListener("click", () => handleKeyInput(btn.getAttribute("data-key")));
+    });
+
+    document.getElementById("stopBtn")?.addEventListener("click", stopCurrentAudio);
+    document.getElementById("nameSubmitBtn")?.addEventListener("click", submitScore);
+});
+
+// --- ゲーム進行 ---
+
+function nextQuestion() {
+    playerInput = "";
+    updateDisplay();
+    // ランダムに正解を決定
+    currentCorrectAnswer = POSTS[Math.floor(Math.random() * POSTS.length)];
+    // クイズ音声 (quiz_4.mp3等)
+    const quizFile = `quiz_${currentCorrectAnswer.replace('.', '')}.mp3`;
+    playSound(quizFile);
+}
+
+function handleKeyInput(key) {
+    if (!isGameStarted && key !== "Enter") {
+        if (INPUT_FILES[key]) playSound(INPUT_FILES[key]);
+        return;
+    }
+
+    if (key === "C") {
+        playerInput = "";
+        playSound("clear.mp3");
+    } else if (key === "Enter") {
+        checkAnswer();
+    } else {
+        playerInput = key; 
+        if (INPUT_FILES[key]) playSound(INPUT_FILES[key]);
+    }
+    updateDisplay();
+}
+
+function checkAnswer() {
+    if (playerInput === "") return;
+
+    if (playerInput === currentCorrectAnswer) {
+        // 【正解】
+        score++;
+        playSound("seikai.mp3", () => {
+            setTimeout(nextQuestion, 800);
+        });
+    } else {
+        // 【不正解】 no.mp3 -> answer_X.mp3 の連続再生
+        playSound("no.mp3", () => {
+            const answerFile = `answer_${currentCorrectAnswer.replace('.', '')}.mp3`;
+            playSound(answerFile, () => {
+                if (gameMode === "championship") {
+                    endGame();
+                } else {
+                    setTimeout(nextQuestion, 1000);
+                }
+            });
         });
     }
+}
+
+// --- Firestore連携 ---
+
+async function endGame() {
+    isGameStarted = false;
+    document.getElementById("rankingArea").style.display = "block";
+    showRanking(); 
+    if (score > 0) {
+        document.getElementById("scoreSubmitArea").style.display = "block";
+    }
+}
+
+async function showRanking() {
+    const rankingList = document.getElementById("rankingList");
+    rankingList.innerHTML = "読み込み中...";
+    try {
+        const snapshot = await db.collection("ranking").orderBy("score", "desc").limit(10).get();
+        rankingList.innerHTML = "";
+        let i = 1;
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            rankingList.innerHTML += `<p>${i}位: ${data.name}様 - ${data.score}点</p>`;
+            i++;
+        });
+    } catch (e) {
+        console.error(e);
+        rankingList.innerHTML = "取得できませんでした。";
+    }
+}
+
+async function submitScore() {
+    const nameInput = document.getElementById("nameInput");
+    const name = nameInput.value || "ななしさん";
+    try {
+        await db.collection("ranking").add({
+            name: name,
+            score: score,
+            date: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        document.getElementById("scoreSubmitArea").style.display = "none";
+        showRanking();
+    } catch (e) {
+        alert("登録失敗");
+    }
+}
+
+// --- 音声・補助 ---
+
+function playSound(fileName, onEndedCallback = null) {
+    stopCurrentAudio();
+    const audio = new Audio(SOUND_PATH + fileName);
+    currentAudio = audio;
+    if (onEndedCallback) audio.onended = onEndedCallback;
+    audio.play().catch(e => console.warn(e));
+}
+
+function stopCurrentAudio() {
+    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+}
+
+function updateDisplay() {
+    document.getElementById("currentInput").textContent = playerInput;
+}
+
+function unlockAudio() {
+    const silent = new Audio(SOUND_PATH + "confirm.mp3");
+    silent.volume = 0;
+    silent.play().catch(() => {});
+}

@@ -172,3 +172,41 @@ footer {
     font-size: 0.8rem;
     color: #aaa;
 }
+
+/* モード選択スイッチのスタイル */
+.mode-switch-container {
+    display: flex;
+    background: #222;
+    border-radius: var(--btn-radius);
+    padding: 5px;
+    margin: 10px auto;
+    max-width: 400px;
+    border: 2px solid var(--accent);
+}
+
+.mode-switch-container input[type="radio"] {
+    display: none; /* 実際のラジオボタンは隠す */
+}
+
+.mode-label {
+    flex: 1;
+    padding: 12px;
+    cursor: pointer;
+    text-align: center;
+    font-weight: bold;
+    border-radius: calc(var(--btn-radius) - 4px);
+    transition: all 0.3s ease;
+    color: #888;
+}
+
+/* 選択されている時のスタイル */
+input[type="radio"]:checked + .mode-label {
+    background-color: var(--accent);
+    color: var(--bg);
+    box-shadow: 0 0 15px var(--accent);
+}
+
+/* フォーカス時のアクセシビリティ（キーボード操作用） */
+input[type="radio"]:focus + .mode-label {
+    outline: 2px solid white;
+}

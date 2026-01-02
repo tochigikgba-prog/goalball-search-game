@@ -21,44 +21,58 @@
       <button id="checkBtn" aria-label="イヤホンの左右の確認" type="button">イヤホンの左右の確認</button>
     </section>
 
-    <section class="controls control-row-2" aria-label="ヒント" role="region">
+    <section class="controls control-row-2" aria-label="操作" role="region">
       <button id="hintBtn" aria-label="ヒントを聴く" type="button">ヒントを聴く</button>
       <button id="stopBtn" aria-label="音声を停止" type="button">音声を停止</button>
     </section>
 
-   <section class="controls start-section" role="region">
-  <button id="startBtn" aria-label="ゲーム開始" style="background-color: var(--accent); color: var(--bg); width: 100%; font-size: 1.5rem; padding: 15px; margin-top: 10px;">スタート</button>
-</section>
+    <section class="controls mode-selection" role="region" style="margin-bottom: 10px;">
+      <div class="mode-switch-container">
+        <input type="radio" name="gameMode" value="practice" id="modePractice" checked>
+        <label for="modePractice" class="mode-label">練習モード</label>
+        <input type="radio" name="gameMode" value="championship" id="modeChamp">
+        <label for="modeChamp" class="mode-label">選手権モード</label>
+      </div>
+    </section>
 
-<section id="keypad" class="keypad-grid" aria-label="回答用キーパッド" role="region">
-  <button class="key" data-key="0" aria-label="0"><img src="frame_outline.png" class="btn-frame"><img src="0.png" class="btn-number"></button>
-  <button class="key" data-key="1" aria-label="1"><img src="frame_outline.png" class="btn-frame"><img src="1.png" class="btn-number"></button>
-  <button class="key" data-key="2" aria-label="2"><img src="frame_outline.png" class="btn-frame"><img src="2.png" class="btn-number"></button>
-  
-  <button class="key" data-key="3" aria-label="3"><img src="frame_outline.png" class="btn-frame"><img src="3.png" class="btn-number"></button>
-  <button class="key" data-key="4" aria-label="4"><img src="frame_outline.png" class="btn-frame"><img src="4.png" class="btn-number"></button>
-  <button class="key" data-key="4.5" aria-label="4.5"><img src="frame_outline.png" class="btn-frame"><img src="45.png" class="btn-number"></button>
-  
-  <button class="key" data-key="5" aria-label="5"><img src="frame_outline.png" class="btn-frame"><img src="5.png" class="btn-number"></button>
-  <button class="key" data-key="6" aria-label="6"><img src="frame_outline.png" class="btn-frame"><img src="6.png" class="btn-number"></button>
-  <button class="key" data-key="7" aria-label="7"><img src="frame_outline.png" class="btn-frame"><img src="7.png" class="btn-number"></button>
-  
-  <button class="key" data-key="8" aria-label="8"><img src="frame_outline.png" class="btn-frame"><img src="8.png" class="btn-number"></button>
-  <button class="key" data-key="9" aria-label="9"><img src="frame_outline.png" class="btn-frame"><img src="9.png" class="btn-number"></button>
-  <button class="key text-btn" data-key="C" aria-label="クリア">クリア</button>
-  
-  <button class="key text-btn" data-key="Enter" aria-label="決定">決定</button>
-</section>
+    <section class="controls start-section" role="region">
+      <button id="startBtn" aria-label="ゲーム開始" style="background-color: var(--accent); color: var(--bg); width: 100%; font-size: 1.5rem; padding: 15px; margin-top: 10px;">スタート</button>
+    </section>
+
+    <section id="keypad" class="keypad-grid" aria-label="回答用キーパッド" role="region">
+      <button class="key" data-key="0" aria-label="0"><img src="frame_outline.png" class="btn-frame"><img src="0.png" class="btn-number"></button>
+      <button class="key" data-key="1" aria-label="1"><img src="frame_outline.png" class="btn-frame"><img src="1.png" class="btn-number"></button>
+      <button class="key" data-key="2" aria-label="2"><img src="frame_outline.png" class="btn-frame"><img src="2.png" class="btn-number"></button>
+      
+      <button class="key" data-key="3" aria-label="3"><img src="frame_outline.png" class="btn-frame"><img src="3.png" class="btn-number"></button>
+      <button class="key" data-key="4" aria-label="4"><img src="frame_outline.png" class="btn-frame"><img src="4.png" class="btn-number"></button>
+      <button class="key" data-key="4.5" aria-label="4.5"><img src="frame_outline.png" class="btn-frame"><img src="45.png" class="btn-number"></button>
+      
+      <button class="key" data-key="5" aria-label="5"><img src="frame_outline.png" class="btn-frame"><img src="5.png" class="btn-number"></button>
+      <button class="key" data-key="6" aria-label="6"><img src="frame_outline.png" class="btn-frame"><img src="6.png" class="btn-number"></button>
+      <button class="key" data-key="7" aria-label="7"><img src="frame_outline.png" class="btn-frame"><img src="7.png" class="btn-number"></button>
+      
+      <button class="key" data-key="8" aria-label="8"><img src="frame_outline.png" class="btn-frame"><img src="8.png" class="btn-number"></button>
+      <button class="key" data-key="9" aria-label="9"><img src="frame_outline.png" class="btn-frame"><img src="9.png" class="btn-number"></button>
+      <button class="key text-btn" data-key="C" aria-label="クリア">クリア</button>
+      
+      <button class="key text-btn" data-key="Enter" aria-label="決定">決定</button>
+    </section>
 
     <div id="status" class="status-area" aria-live="polite">
       回答：<span id="currentInput"></span>
     </div>
 
-    <div id="rankingArea" style="display:none;">
-      <h2>ランキング</h2>
-      <div id="rankingList"></div>
-      <input type="text" id="nameInput" placeholder="名前を入力" aria-label="名前を入力">
-      <button id="nameSubmitBtn">登録</button>
+    <div id="rankingArea" style="display:none; background: var(--high-contrast-bg); padding: 15px; border-radius: 10px; margin-top: 20px;">
+      <h2 style="color: var(--accent);">🏆 選手権ランキング</h2>
+      <div id="rankingList" style="text-align: left; margin-bottom: 15px;"></div>
+      
+      <div id="scoreSubmitArea" style="display:none;">
+        <p>ランクインしました！名前を入力してください。</p>
+        <input type="text" id="nameInput" placeholder="名前を入力" aria-label="名前を入力" style="padding: 10px;">
+        <button id="nameSubmitBtn" style="padding: 10px 20px; background: var(--accent); border: none; font-weight: bold;">登録</button>
+      </div>
+      <button onclick="location.reload()" style="margin-top:10px; background:none; border:1px solid #666; color:#aaa;">タイトルへ戻る</button>
     </div>
 
     <div id="a11yStatus" class="sr-only" aria-live="assertive"></div>
@@ -73,7 +87,5 @@
 </footer>
 
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 <script src="script_v2.js"></script>
-</body>
-</html>
