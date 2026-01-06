@@ -161,26 +161,39 @@ async function submitScore() {
     }
 }
 
-// --- 音声・補助 ---
-
+// --- 音声再生関数（強化版） ---
 function playSound(fileName, onEndedCallback = null) {
     stopCurrentAudio();
-    const audio = new Audio(SOUND_PATH + fileName);
-    currentAudio = audio;
-    if (onEndedCallback) audio.onended = onEndedCallback;
-    audio.play().catch(e => console.warn(e));
+    
+    // GitHub Pages用にパスを補正（ドットスラッシュを追加）
+    const audioPath = "./" + SOUND_PATH + fileName;
+    console.log("再生試行:", audioPath); // デバッグ用
+
+    currentAudio = new Audio(audioPath);
+    
+    // 読み込み完了を待ってから再生
+    currentAudio.addEventListener('canplaythrough', () => {
+        currentAudio.play().then(() => {
+            console.log("再生成功:", fileName);
+        }).catch(e => {
+            console.error("再生失敗:", fileName, e);
+            // 失敗した場合はアラートで通知（デバッグ用）
+            // alert("音がブロックされました。画面のどこかをクリックしてください。");
+        });
+    }, { once: true });
+
+    if (onEndedCallback) {
+        currentAudio.onended = onEndedCallback;
+    }
 }
 
-function stopCurrentAudio() {
-    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
-}
-
-function updateDisplay() {
-    document.getElementById("currentInput").textContent = playerInput;
-}
-
+// iOS/ブラウザ制限解除
 function unlockAudio() {
-    const silent = new Audio(SOUND_PATH + "confirm.mp3");
-    silent.volume = 0;
-    silent.play().catch(() => {});
+    // 実際に存在する短い音ファイルを指定してください
+    const audioPath = "./" + SOUND_PATH + "confirm.mp3";
+    const silent = new Audio(audioPath);
+    silent.volume = 0.1; // 完全無音だと解除されない場合があるため極小音量
+    silent.play().then(() => {
+        console.log("オーディオロック解除成功");
+    }).catch(e => console.log("ロック解除失敗:", e));
 }
