@@ -16,8 +16,15 @@
             <h1>ゴールボールサーチゲーム</h1>
         </header>
 
-        <section class="mode-selection" role="region">
-            <p>モードを選んでスタート！</p>
+        <section class="setup-section">
+            <p>まずは音が出るかチェック！</p>
+            <div class="setup-controls">
+                <button onclick="unlockAudio(); playSound('confirm.mp3')" type="button">🎧 左右確認</button>
+                <button onclick="unlockAudio(); playSound('quiz_45.mp3')" type="button">💡 ヒント音</button>
+            </div>
+        </section>
+
+        <section class="mode-selection">
             <div class="mode-switch-container">
                 <button id="modePractice" class="mode-btn">練習モード</button>
                 <button id="modeChamp" class="mode-btn">選手権モード</button>
@@ -49,24 +56,3 @@
             
             <button class="key text-btn" data-key="Enter">決定（確認）</button>
         </section>
-
-        <section id="rankingArea" style="display:none;">
-            <h2>ランキング</h2>
-            <div id="scoreSubmitArea" style="display:none;">
-                <p>スコアを登録します</p>
-                <input type="text" id="nameInput" placeholder="名前を入力（ひらがな推奨）" maxlength="10">
-                <button id="nameSubmitBtn">登録</button>
-            </div>
-            <div id="rankingList">
-                </div>
-            <button onclick="location.reload()" style="margin-top:20px; padding:10px;">タイトルに戻る</button>
-        </section>
-
-        <footer>
-            <p>&copy; 2026 KGBA Goalball Search Game</p>
-        </footer>
-    </main>
-
-    <script src="script_v2.js"></script>
-</body>
-</html>

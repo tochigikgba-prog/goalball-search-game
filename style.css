@@ -1,9 +1,7 @@
-/* style.css */
 :root {
     --bg: #000000;
     --text: #FFFFFF;
     --accent: #FFC000; 
-    --accent-contrast: #000000;
     --danger: #FF3B30;
     --high-contrast-bg: #111111;
     --btn-radius: 12px;
@@ -13,9 +11,8 @@ body {
     margin: 0;
     background: var(--bg);
     color: var(--text);
-    font-family: "BIZ UDPGothic", "Meiryo UI", sans-serif;
+    font-family: sans-serif;
     text-align: center;
-    line-height: 1.5;
 }
 
 main {
@@ -24,185 +21,49 @@ main {
     padding: 15px;
 }
 
-header h1 {
-    font-size: 1.4rem;
-    color: var(--accent);
-}
+header h1 { font-size: 1.4rem; color: var(--accent); }
+#kgbalogo { height: 50px; margin-top: 10px; }
 
-#kgbalogo {
-    height: 50px;
-    margin-top: 10px;
-}
-
-/* --- コントロールボタン・スタートボタン --- */
-.controls, .start-section {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
-    justify-content: center;
-}
-
-.controls button, .start-section button {
-    flex: 1;
-    padding: 15px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    border-radius: var(--btn-radius);
-    border: 3px solid var(--accent);
-    background: var(--high-contrast-bg);
-    color: var(--text);
-    cursor: pointer;
-}
-
-#stopBtn {
-    border-color: var(--danger);
-    color: var(--danger);
-}
-
-#startBtn {
-    background-color: var(--accent);
-    color: var(--bg);
-}
-
-/* --- モード選択スイッチ --- */
-.mode-switch-container {
-    display: flex;
-    background: #222;
-    border-radius: var(--btn-radius);
-    padding: 8px;
-    margin: 20px auto;
-    max-width: 600px;
-    width: 95%;
-    border: 3px solid var(--accent);
-}
-
-.mode-switch-container input[type="radio"] {
-    display: none;
-}
-
-.mode-label {
-    flex: 1;
-    padding: 20px 10px;
-    cursor: pointer;
-    text-align: center;
-    font-weight: bold;
-    font-size: 1.4rem;
-    border-radius: calc(var(--btn-radius) - 4px);
-    transition: all 0.3s ease;
-    color: #bbb;
-}
-
-input[type="radio"]:checked + .mode-label {
-    background-color: var(--accent);
-    color: var(--bg);
-    box-shadow: 0 0 20px var(--accent);
-    font-size: 1.5rem;
-}
-
-input[type="radio"]:focus + .mode-label {
-    outline: 3px solid white;
-}
-
-/* --- キーパッド --- */
-.keypad-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin: 20px auto;
-    max-width: 400px;
-}
-
-@media screen and (min-width: 600px) {
-    .keypad-grid {
-        grid-template-columns: repeat(6, 1fr); 
-        max-width: 700px;
-    }
-}
-
-.key[data-key="Enter"] {
-    grid-column: 1 / -1;
-    aspect-ratio: auto !important;
-    height: 70px;
-    margin-top: 10px;
-}
-
-.key {
-    position: relative;
-    background: none;
-    border: none;
-    padding: 0;
-    aspect-ratio: 1 / 1; 
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-frame {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-.btn-number {
-    position: absolute;
-    width: 75%; 
-    height: auto;
-    pointer-events: none; 
-}
-
-.text-btn {
-    background-color: var(--high-contrast-bg);
-    border: 3px solid var(--accent);
-    border-radius: var(--btn-radius);
-    color: var(--accent);
-    font-size: 1.3rem;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.key:focus {
-    outline: 4px solid #fff;
-    outline-offset: 2px;
-}
-
-.key:active {
-    opacity: 0.7;
-    transform: scale(0.95);
-}
-
-.status-area {
-    font-size: 1.5rem;
-    margin: 20px 0;
-    min-height: 2em;
+/* 準備セクション */
+.setup-section {
+    background: #1a1a1a;
     padding: 10px;
-    background: var(--high-contrast-bg);
-    border-radius: 10px;
-    border: 1px solid #333;
+    border-radius: var(--btn-radius);
+    margin-bottom: 15px;
+    border: 1px dashed #555;
+}
+.setup-controls { display: flex; gap: 10px; }
+.setup-controls button {
+    flex: 1; padding: 12px; background: #333; color: #fff;
+    border: 1px solid #777; border-radius: var(--btn-radius);
 }
 
-#currentInput {
-    color: var(--accent);
-    font-weight: bold;
-    letter-spacing: 2px;
+/* モード開始ボタン */
+.mode-switch-container { display: flex; gap: 15px; margin-bottom: 20px; }
+.mode-btn {
+    flex: 1; padding: 25px 10px; font-weight: bold; font-size: 1.4rem;
+    border-radius: var(--btn-radius); background: var(--high-contrast-bg);
+    color: var(--accent); border: 3px solid var(--accent); cursor: pointer;
 }
+#modeChamp { background-color: #2a2000; }
 
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0,0,0,0);
-    border: 0;
+/* キーパッド */
+.keypad-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    margin: 20px auto; max-width: 400px;
 }
+@media screen and (min-width: 600px) {
+    .keypad-grid { grid-template-columns: repeat(6, 1fr); max-width: 700px; }
+}
+.key { position: relative; background: none; border: none; aspect-ratio: 1/1; cursor: pointer; padding: 0; }
+.btn-frame { width: 100%; height: 100%; object-fit: contain; }
+.btn-number { position: absolute; width: 75%; pointer-events: none; left: 12.5%; top: 12.5%; }
+.text-btn { background: var(--high-contrast-bg); border: 3px solid var(--accent); border-radius: var(--btn-radius); color: var(--accent); font-size: 1.2rem; font-weight: bold; }
+.key[data-key="Enter"] { grid-column: 1 / -1; height: 70px; aspect-ratio: auto; }
 
-footer {
-    margin-top: 30px;
-    padding: 20px;
-    font-size: 0.8rem;
-    color: #aaa;
-}
+/* その他 */
+.status-area { font-size: 1.5rem; margin: 15px 0; padding: 10px; background: var(--high-contrast-bg); border-radius: 10px; }
+#currentInput { color: var(--accent); font-weight: bold; }
+#stopBtn { width: 100%; padding: 15px; border-radius: var(--btn-radius); border: 2px solid var(--danger); color: var(--danger); background: none; }
+#nameInput { padding: 15px; font-size: 1.2rem; width: 80%; margin-bottom: 10px; }
+#nameSubmitBtn { padding: 15px 30px; background: var(--accent); border: none; font-weight: bold; }
