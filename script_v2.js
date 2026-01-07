@@ -107,3 +107,36 @@ async function showRanking() {
         snapshot.forEach((doc) => {
             const d = doc.data();
             list.innerHTML += `<p>${i}位: ${d.name}様 - ${d.score}点</p>`;
+            i++;
+        });
+    } catch (e) { list.innerHTML = "取得失敗"; }
+}
+
+async function submitScore() {
+    const name = document.getElementById("nameInput").value || "ななしさん";
+    try {
+        await db.collection("ranking").add({ name: name, score: score, date: firebase.firestore.FieldValue.serverTimestamp() });
+        document.getElementById("scoreSubmitArea").style.display = "none";
+        showRanking();
+    } catch (e) { alert("登録失敗"); }
+}
+
+function playSound(fileName, onEndedCallback = null) {
+    stopCurrentAudio();
+    const audio = new Audio("./" + SOUND_PATH + fileName);
+    currentAudio = audio;
+    audio.addEventListener('canplaythrough', () => { audio.play().catch(e => console.log(e)); }, { once: true });
+    if (onEndedCallback) audio.onended = onEndedCallback;
+}
+
+function stopCurrentAudio() {
+    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+}
+
+function updateDisplay() { document.getElementById("currentInput").textContent = playerInput; }
+
+function unlockAudio() {
+    const silent = new Audio("./" + SOUND_PATH + "confirm.mp3");
+    silent.volume = 0.1;
+    silent.play().catch(e => console.log(e));
+}
