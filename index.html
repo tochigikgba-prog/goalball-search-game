@@ -3,24 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ゴールボールサーチゲーム - 選手権対応版</title>
+    <title>ゴールボールサーチゲーム</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
 <body>
-
     <main>
         <header>
-            <img src="sound/kgbalogo.png" alt="KGBAロゴ" id="kgbalogo">
+            <img src="kgbalogo.png" alt="KGBAロゴ" id="kgbalogo">
             <h1>ゴールボールサーチゲーム</h1>
         </header>
 
         <section class="setup-section">
             <p>まずは音が出るかチェック！</p>
             <div class="setup-controls">
-                <button onclick="unlockAudio(); playSound('confirm.mp3')" type="button">🎧 左右確認</button>
-                <button onclick="unlockAudio(); playSound('quiz_45.mp3')" type="button">💡 ヒント音</button>
+                <button id="leftRightBtn" type="button">🎧 左右確認</button>
+                <button id="hintBtn" type="button">💡 ヒント音</button>
             </div>
         </section>
 
@@ -31,7 +30,7 @@
             </div>
         </section>
 
-        <section class="status-area" aria-live="polite">
+        <section class="status-area">
             <div id="status">回答：<span id="currentInput"></span></div>
         </section>
 
@@ -39,20 +38,34 @@
             <button id="stopBtn" type="button">音を止める</button>
         </section>
 
-        <section class="keypad-grid" role="group" aria-label="数字入力">
-            <button class="key" data-key="1"><img src="sound/btn_frame.png" class="btn-frame"><img src="sound/1.png" class="btn-number" alt="1"></button>
-            <button class="key" data-key="2"><img src="sound/btn_frame.png" class="btn-frame"><img src="sound/2.png" class="btn-number" alt="2"></button>
-            <button class="key" data-key="3"><img src="sound/btn_frame.png" class="btn-frame"><img src="sound/3.png" class="btn-number" alt="3"></button>
-            <button class="key" data-key="4"><img src="sound/btn_frame.png" class="btn-frame"><img src="sound/4.png" class="btn-number" alt="4"></button>
-            <button class="key" data-key="5"><img src="sound/btn_frame.png" class="btn-frame"><img src="sound/5.png" class="btn-number" alt="5"></button>
-            <button class="key" data-key="6"><img src="sound/btn_frame.png" class="btn-frame"><img src="sound/6.png" class="btn-number" alt="6"></button>
-            <button class="key" data-key="7"><img src="sound/btn_frame.png" class="btn-frame"><img src="sound/7.png" class="btn-number" alt="7"></button>
-            <button class="key" data-key="8"><img src="sound/btn_frame.png" class="btn-frame"><img src="sound/8.png" class="btn-number" alt="8"></button>
-            <button class="key" data-key="9"><img src="sound/btn_frame.png" class="btn-frame"><img src="sound/9.png" class="btn-number" alt="9"></button>
-            
+        <section class="keypad-grid">
+            <button class="key" data-key="1"><img src="1.png" alt="1"></button>
+            <button class="key" data-key="2"><img src="2.png" alt="2"></button>
+            <button class="key" data-key="3"><img src="3.png" alt="3"></button>
+            <button class="key" data-key="4"><img src="4.png" alt="4"></button>
+            <button class="key" data-key="5"><img src="5.png" alt="5"></button>
+            <button class="key" data-key="6"><img src="6.png" alt="6"></button>
+            <button class="key" data-key="7"><img src="7.png" alt="7"></button>
+            <button class="key" data-key="8"><img src="8.png" alt="8"></button>
+            <button class="key" data-key="9"><img src="9.png" alt="9"></button>
             <button class="key text-btn" data-key="C">クリア</button>
-            <button class="key" data-key="0"><img src="sound/btn_frame.png" class="btn-frame"><img src="sound/0.png" class="btn-number" alt="0"></button>
+            <button class="key" data-key="0"><img src="0.png" alt="0"></button>
             <button class="key text-btn" data-key="4.5">4.5</button>
-            
             <button class="key text-btn" data-key="Enter">決定（確認）</button>
         </section>
+
+        <section id="rankingArea" style="display:none;">
+            <h2>ランキング</h2>
+            <div id="scoreSubmitArea" style="display:none;">
+                <input type="text" id="nameInput" placeholder="名前を入力" maxlength="10">
+                <button id="nameSubmitBtn">登録</button>
+            </div>
+            <div id="rankingList"></div>
+            <button onclick="location.reload()" class="mode-btn" style="margin-top:20px;">タイトルに戻る</button>
+        </section>
+
+        <footer><p>&copy; 2026 KGBA</p></footer>
+    </main>
+    <script src="script_v2.js"></script>
+</body>
+</html>

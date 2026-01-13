@@ -36,6 +36,7 @@ header h1 { font-size: 1.4rem; color: var(--accent); }
 .setup-controls button {
     flex: 1; padding: 12px; background: #333; color: #fff;
     border: 1px solid #777; border-radius: var(--btn-radius);
+    cursor: pointer;
 }
 
 /* モード開始ボタン */
@@ -47,23 +48,65 @@ header h1 { font-size: 1.4rem; color: var(--accent); }
 }
 #modeChamp { background-color: #2a2000; }
 
-/* キーパッド */
+/* キーパッド（画像表示の修正版） */
 .keypad-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
-    margin: 20px auto; max-width: 400px;
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 12px;
+    margin: 20px auto; 
+    max-width: 400px;
 }
+
 @media screen and (min-width: 600px) {
     .keypad-grid { grid-template-columns: repeat(6, 1fr); max-width: 700px; }
 }
-.key { position: relative; background: none; border: none; aspect-ratio: 1/1; cursor: pointer; padding: 0; }
-.btn-frame { width: 100%; height: 100%; object-fit: contain; }
-.btn-number { position: absolute; width: 75%; pointer-events: none; left: 12.5%; top: 12.5%; }
-.text-btn { background: var(--high-contrast-bg); border: 3px solid var(--accent); border-radius: var(--btn-radius); color: var(--accent); font-size: 1.2rem; font-weight: bold; }
-.key[data-key="Enter"] { grid-column: 1 / -1; height: 70px; aspect-ratio: auto; }
 
-/* その他 */
+.key {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+/* 数字画像自体の設定 */
+.key img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 2px solid var(--accent); /* 黄色の枠線 */
+    border-radius: var(--btn-radius);
+    box-sizing: border-box;
+}
+
+/* クリアや4.5など、画像がないボタン */
+.text-btn {
+    background: var(--high-contrast-bg);
+    border: 3px solid var(--accent);
+    border-radius: var(--btn-radius);
+    color: var(--accent);
+    font-size: 1.2rem;
+    font-weight: bold;
+    aspect-ratio: 1 / 1; 
+}
+
+/* 決定（Enter）ボタン */
+.key[data-key="Enter"] {
+    grid-column: 1 / -1;
+    height: 70px;
+    aspect-ratio: auto;
+    margin-top: 10px;
+}
+
+/* ステータス・操作 */
 .status-area { font-size: 1.5rem; margin: 15px 0; padding: 10px; background: var(--high-contrast-bg); border-radius: 10px; }
 #currentInput { color: var(--accent); font-weight: bold; }
-#stopBtn { width: 100%; padding: 15px; border-radius: var(--btn-radius); border: 2px solid var(--danger); color: var(--danger); background: none; }
-#nameInput { padding: 15px; font-size: 1.2rem; width: 80%; margin-bottom: 10px; }
-#nameSubmitBtn { padding: 15px 30px; background: var(--accent); border: none; font-weight: bold; }
+#stopBtn { width: 100%; padding: 15px; border-radius: var(--btn-radius); border: 2px solid var(--danger); color: var(--danger); background: none; cursor: pointer; }
+
+/* ランキングエリア */
+#rankingArea { margin-top: 30px; padding: 20px; background: #111; border-radius: 15px; }
+#nameInput { padding: 15px; font-size: 1.2rem; width: 80%; margin-bottom: 10px; background: #222; border: 1px solid #555; color: #fff; }
+#nameSubmitBtn { padding: 10px 30px; background: var(--accent); border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }

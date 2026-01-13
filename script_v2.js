@@ -1,10 +1,11 @@
-/* script_v2.js - 音声確認・即スタート・Firestore完全版 */
+/* script_v2.js - 音声フォルダ指定・GitHub構成対応版 */
 
+// --- Firebase設定（自分のものに書き換えてください） ---
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
-  authDomain: "gsranking.firebaseapp.com",
-  projectId: "gsranking",
-  storageBucket: "gsranking.appspot.com",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
   messagingSenderId: "YOUR_SENDER_ID",
   appId: "YOUR_APP_ID"
 };
@@ -12,12 +13,16 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore(); 
 
-const SOUND_PATH = "sound/";
+// --- 設定・定数 ---
+// 音声ファイルは sound フォルダの中にあるため指定
+const SOUND_PATH = "sound/"; 
 const POSTS = ["0", "1", "2", "3", "4", "4.5", "5", "6", "7", "8", "9"];
+
 const INPUT_FILES = {
-  "0":"0.mp3", "1":"1.mp3", "2":"2.mp3", "3":"3.mp3", "4":"4.mp3", "5":"5.mp3",
-  "6":"6.mp3", "7":"7.mp3", "8":"8.mp3", "9":"9.mp3", "4.5":"quiz_45.mp3",
-  "C":"clear.mp3", "Enter":"confirm.mp3"
+  "0":"input_0.mp3", "1":"input_1.mp3", "2":"input_2.mp3", "3":"input_3.mp3", 
+  "4":"input_4.mp3", "5":"input_5.mp3", "6":"input_6.mp3", "7":"input_7.mp3", 
+  "8":"input_8.mp3", "9":"input_9.mp3", "4.5":"quiz_45.mp3",
+  "C":"input_clear.mp3", "Enter":"enter.mp3"
 };
 
 let playerInput = "";
@@ -28,11 +33,25 @@ let gameMode = "practice";
 let score = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
+    // 準備ボタン
+    document.getElementById("leftRightBtn")?.addEventListener("click", () => {
+        unlockAudio();
+        playSound('enter.mp3'); 
+    });
+    document.getElementById("hintBtn")?.addEventListener("click", () => {
+        unlockAudio();
+        playSound('hint.mp3'); 
+    });
+
+    // モード開始ボタン
     document.getElementById("modePractice")?.addEventListener("click", () => startGame("practice"));
     document.getElementById("modeChamp")?.addEventListener("click", () => startGame("championship"));
+
+    // キーパッド
     document.querySelectorAll(".key").forEach(btn => {
         btn.addEventListener("click", () => handleKeyInput(btn.getAttribute("data-key")));
     });
+
     document.getElementById("stopBtn")?.addEventListener("click", stopCurrentAudio);
     document.getElementById("nameSubmitBtn")?.addEventListener("click", submitScore);
 });
@@ -57,14 +76,13 @@ function nextQuestion() {
 }
 
 function handleKeyInput(key) {
-    // 開始前でも音出し確認を可能にする
     if (!isGameStarted) {
         if (INPUT_FILES[key]) playSound(INPUT_FILES[key]);
         return;
     }
     if (key === "C") {
         playerInput = "";
-        playSound("clear.mp3");
+        playSound("input_clear.mp3");
     } else if (key === "Enter") {
         checkAnswer();
     } else {
@@ -78,7 +96,9 @@ function checkAnswer() {
     if (playerInput === "") return;
     if (playerInput === currentCorrectAnswer) {
         score++;
-        playSound("seikai.mp3", () => { setTimeout(nextQuestion, 800); });
+        playSound("seikai.mp3", () => {
+            setTimeout(nextQuestion, 800);
+        });
     } else {
         playSound("no.mp3", () => {
             const answerFile = `answer_${currentCorrectAnswer.replace('.', '')}.mp3`;
@@ -98,24 +118,28 @@ async function endGame() {
 }
 
 async function showRanking() {
-    const list = document.getElementById("rankingList");
-    list.innerHTML = "読み込み中...";
+    const rankingList = document.getElementById("rankingList");
+    rankingList.innerHTML = "読み込み中...";
     try {
         const snapshot = await db.collection("ranking").orderBy("score", "desc").limit(10).get();
-        list.innerHTML = "";
+        rankingList.innerHTML = "";
         let i = 1;
         snapshot.forEach((doc) => {
-            const d = doc.data();
-            list.innerHTML += `<p>${i}位: ${d.name}様 - ${d.score}点</p>`;
+            const data = doc.data();
+            rankingList.innerHTML += `<p>${i}位: ${data.name}様 - ${data.score}点</p>`;
             i++;
         });
-    } catch (e) { list.innerHTML = "取得失敗"; }
+    } catch (e) { rankingList.innerHTML = "取得できませんでした。"; }
 }
 
 async function submitScore() {
     const name = document.getElementById("nameInput").value || "ななしさん";
     try {
-        await db.collection("ranking").add({ name: name, score: score, date: firebase.firestore.FieldValue.serverTimestamp() });
+        await db.collection("ranking").add({
+            name: name,
+            score: score,
+            date: firebase.firestore.FieldValue.serverTimestamp()
+        });
         document.getElementById("scoreSubmitArea").style.display = "none";
         showRanking();
     } catch (e) { alert("登録失敗"); }
@@ -123,20 +147,23 @@ async function submitScore() {
 
 function playSound(fileName, onEndedCallback = null) {
     stopCurrentAudio();
-    const audio = new Audio("./" + SOUND_PATH + fileName);
-    currentAudio = audio;
-    audio.addEventListener('canplaythrough', () => { audio.play().catch(e => console.log(e)); }, { once: true });
-    if (onEndedCallback) audio.onended = onEndedCallback;
+    // ここで sound/ フォルダを参照するように修正
+    const audioPath = SOUND_PATH + fileName;
+    currentAudio = new Audio(audioPath);
+    currentAudio.play().catch(e => console.log("再生失敗:", fileName));
+    if (onEndedCallback) currentAudio.onended = onEndedCallback;
 }
 
 function stopCurrentAudio() {
     if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
 }
 
-function updateDisplay() { document.getElementById("currentInput").textContent = playerInput; }
+function updateDisplay() {
+    document.getElementById("currentInput").textContent = playerInput;
+}
 
 function unlockAudio() {
-    const silent = new Audio("./" + SOUND_PATH + "confirm.mp3");
+    const silent = new Audio(SOUND_PATH + "enter.mp3");
     silent.volume = 0.1;
-    silent.play().catch(e => console.log(e));
+    silent.play().catch(e => {});
 }
