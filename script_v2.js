@@ -1,5 +1,4 @@
-/* script_v2.js - 最終完成版 */
-
+// Firebaseの設定（ここを埋めてください）
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -18,7 +17,8 @@ const POSTS = ["1", "2", "3", "4", "4.5", "5", "6", "7", "8", "9"];
 const INPUT_FILES = {
   "1":"input_1.mp3", "2":"input_2.mp3", "3":"input_3.mp3", "4":"input_4.mp3", 
   "4.5":"input_4.5.mp3", "5":"input_5.mp3", "6":"input_6.mp3", "7":"input_7.mp3", 
-  "8":"input_8.mp3", "9":"input_9.mp3", "C":"input_clear.mp3", "Enter":"enter.mp3"
+  "8":"input_8.mp3", "9":"input_9.mp3", "C":"input_clear.mp3", 
+  "Enter":"kettei.mp3" 
 };
 
 let playerInput = "";
@@ -29,20 +29,16 @@ let gameMode = "practice";
 let score = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 準備ボタン
     document.getElementById("leftRightBtn")?.addEventListener("click", () => { unlockAudio(); playSound('zunda_check.mp3'); });
     document.getElementById("hintBtn")?.addEventListener("click", () => { unlockAudio(); playSound('hint.mp3'); });
 
-    // モード開始ボタン
     document.getElementById("btnStartTraining")?.addEventListener("click", () => startGame("practice"));
     document.getElementById("btnStartPro")?.addEventListener("click", () => startGame("championship"));
 
-    // キーパッド
     document.querySelectorAll(".key").forEach(btn => {
         btn.addEventListener("click", () => handleKeyInput(btn.getAttribute("data-key")));
     });
 
-    // その他ボタン
     document.getElementById("stopBtn")?.addEventListener("click", () => playSound('stop_play.mp3'));
     document.getElementById("nameSubmitBtn")?.addEventListener("click", submitScore);
     document.getElementById("btnReturnToTop")?.addEventListener("click", () => {
@@ -56,12 +52,10 @@ function startGame(selectedMode) {
     score = 0;
     isGameStarted = true;
     
-    // 画面の切り替え
     document.getElementById("setupArea").classList.add("hidden");
     document.getElementById("modeSelectionArea").classList.add("hidden");
     document.getElementById("gamePlayArea").classList.remove("hidden");
 
-    // モード開始音
     const startSound = (gameMode === "practice") ? "start_training.mp3" : "start_pro.mp3";
     playSound(startSound, () => setTimeout(nextQuestion, 1000));
 }
@@ -112,16 +106,16 @@ function endGame() {
     if (score > 0) document.getElementById("scoreSubmitArea").style.display = "block";
 }
 
-// (以下、Firebase処理とplaySound関数は以前と同様ですが、パス修正済み)
 function playSound(fileName, onEndedCallback = null) {
     stopCurrentAudio();
     currentAudio = new Audio(SOUND_PATH + fileName);
     currentAudio.play().catch(e => console.log("再生失敗:", fileName));
     if (onEndedCallback) currentAudio.onended = onEndedCallback;
 }
+
 function stopCurrentAudio() { if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; } }
 function updateDisplay() { document.getElementById("currentInput").textContent = playerInput; }
-function unlockAudio() { const silent = new Audio(SOUND_PATH + "enter.mp3"); silent.volume = 0.1; silent.play().catch(e => {}); }
+function unlockAudio() { const silent = new Audio(SOUND_PATH + "input_1.mp3"); silent.volume = 0.1; silent.play().catch(e => {}); }
 
 async function showRanking() {
     const list = document.getElementById("rankingList");

@@ -1,10 +1,8 @@
-/* --- 前半部分は同じでOKですが、念のため全文載せます --- */
 :root {
     --bg: #000000;
     --text: #FFFFFF;
     --accent: #FFC000; 
     --danger: #FF3B30;
-    --high-contrast-bg: #111111;
     --btn-radius: 12px;
 }
 
@@ -17,26 +15,20 @@ header h1 { font-size: 1.4rem; color: var(--accent); }
 .setup-controls { display: flex; gap: 10px; }
 .setup-controls button { flex: 1; padding: 15px; background: #333; color: #fff; border: 1px solid #777; border-radius: var(--btn-radius); cursor: pointer; }
 
-.mode-selection { display: flex; flex-direction: column; gap: 20px; margin: 20px 0; }
-.mode-card { background: #1a1a1a; padding: 20px; border-radius: var(--btn-radius); border: 2px solid #333; }
-.mode-card h2 { color: var(--accent); margin-bottom: 15px; }
-.start-btn { width: 100%; padding: 20px; font-weight: bold; font-size: 1.2rem; background: var(--high-contrast-bg); color: var(--accent); border: 3px solid var(--accent); border-radius: var(--btn-radius); cursor: pointer; }
+.mode-selection { display: flex; flex-direction: column; gap: 15px; margin: 20px 0; }
+.start-btn { width: 100%; padding: 25px; font-weight: bold; font-size: 1.4rem; background: #111; color: var(--accent); border: 3px solid var(--accent); border-radius: var(--btn-radius); cursor: pointer; }
 
-/* キーパッド：5列に並べる設定 */
 .keypad-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px auto; max-width: 600px; }
 .key { background: none; border: none; padding: 0; cursor: pointer; }
 .key img { width: 100%; height: auto; border: 2px solid var(--accent); border-radius: var(--btn-radius); box-sizing: border-box; }
-.text-btn { background: var(--high-contrast-bg); border: 3px solid var(--accent); border-radius: var(--btn-radius); color: var(--accent); font-size: 1rem; font-weight: bold; aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center;}
+.text-btn { background: #111; border: 3px solid var(--accent); border-radius: var(--btn-radius); color: var(--accent); font-size: 1rem; font-weight: bold; aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; }
 .wide-btn { grid-column: span 4; aspect-ratio: auto; }
 
-.status-area { font-size: 1.5rem; margin: 15px 0; padding: 15px; background: var(--high-contrast-bg); border-radius: 10px; border: 1px solid #333; }
+.status-area { font-size: 1.5rem; margin: 15px 0; padding: 15px; background: #111; border-radius: 10px; border: 1px solid #333; }
 #currentInput { color: var(--accent); font-weight: bold; }
 #stopBtn { width: 100%; padding: 15px; border-radius: var(--btn-radius); border: 2px solid var(--danger); color: var(--danger); background: none; font-weight: bold; cursor: pointer; }
 
-/* 🌟 ここが重要！これが無いと hidden が効きません 🌟 */
-.hidden { 
-    display: none !important; 
-}
+.hidden { display: none !important; }
 
-#rankingArea { margin-top: 30px; padding: 20px; background: #111; border-radius: 15px; }
-.mode-btn { margin-top: 20px; padding: 15px 30px; background: var(--accent); border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+#rankingArea { margin-top: 30px; padding: 20px; background: #111; border-radius: 15px; border: 2px solid var(--accent); }
+.return-btn { margin-top: 20px; padding: 15px 30px; background: var(--accent); border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: #000; }
