@@ -1,34 +1,22 @@
-:root {
-    --bg: #000000;
-    --text: #FFFFFF;
-    --accent: #FFC000; 
-    --danger: #FF3B30;
-    --btn-radius: 12px;
-}
-body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; text-align: center; }
-main { max-width: 800px; margin: 0 auto; padding: 15px; }
-header h1 { font-size: 1.4rem; color: var(--accent); }
-#kgbalogo { height: 50px; margin-top: 10px; }
+:root { --bg: #000; --text: #fff; --accent: #FFC000; }
+body { background: var(--bg); color: var(--text); text-align: center; font-family: sans-serif; }
+main { max-width: 600px; margin: 0 auto; padding: 20px; }
+#kgbalogo { height: 60px; }
 
-.setup-section { background: #1a1a1a; padding: 15px; border-radius: var(--btn-radius); margin-bottom: 15px; border: 1px dashed #555; }
+.setup-section { background: #222; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
 .setup-controls { display: flex; gap: 10px; }
-.setup-controls button { flex: 1; padding: 15px; background: #333; color: #fff; border: 1px solid #777; border-radius: var(--btn-radius); cursor: pointer; }
+.setup-controls button { flex: 1; padding: 10px; cursor: pointer; }
 
-.mode-selection { display: flex; flex-direction: column; gap: 15px; margin: 20px 0; }
-.start-btn { width: 100%; padding: 25px; font-weight: bold; font-size: 1.4rem; background: #111; color: var(--accent); border: 3px solid var(--accent); border-radius: var(--btn-radius); cursor: pointer; }
+.mode-selection { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
+.start-btn { padding: 25px; font-size: 1.5rem; font-weight: bold; color: var(--accent); background: #111; border: 3px solid var(--accent); border-radius: 15px; cursor: pointer; }
 
-.keypad-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px auto; max-width: 600px; }
-.key { background: none; border: none; padding: 0; cursor: pointer; }
-.key img { width: 100%; height: auto; border: 2px solid var(--accent); border-radius: var(--btn-radius); box-sizing: border-box; }
-.text-btn { background: #111; border: 3px solid var(--accent); border-radius: var(--btn-radius); color: var(--accent); font-size: 1rem; font-weight: bold; aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; }
-.wide-btn { grid-column: span 4; aspect-ratio: auto; }
-
-.status-area { font-size: 1.5rem; margin: 15px 0; padding: 15px; background: #111; border-radius: 10px; border: 1px solid #333; }
-#currentInput { color: var(--accent); font-weight: bold; }
-#stopBtn { width: 100%; padding: 15px; border-radius: var(--btn-radius); border: 2px solid var(--danger); color: var(--danger); background: none; font-weight: bold; cursor: pointer; }
-
-/* 🌟 最初は隠す設定 🌟 */
+/* 🌟 ここが重要：最初は画面を隠す設定 🌟 */
 .hidden { display: none !important; }
 
-#rankingArea { margin-top: 30px; padding: 20px; background: #111; border-radius: 15px; border: 2px solid var(--accent); }
-.return-btn { margin-top: 20px; padding: 15px 30px; background: var(--accent); border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: #000; }
+.keypad-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; }
+.key { background: none; border: none; cursor: pointer; }
+.key img { width: 100%; border: 2px solid var(--accent); border-radius: 10px; }
+.text-btn { border: 2px solid var(--accent); color: var(--accent); font-weight: bold; border-radius: 10px; aspect-ratio: 1/1; }
+.wide-btn { grid-column: span 4; aspect-ratio: auto; }
+#stopBtn { width: 100%; padding: 15px; margin-top: 20px; background: none; border: 2px solid #ff3b30; color: #ff3b30; font-weight: bold; cursor: pointer; }
+.return-btn { margin-top: 20px; padding: 10px 20px; background: var(--accent); border: none; font-weight: bold; cursor: pointer; }
