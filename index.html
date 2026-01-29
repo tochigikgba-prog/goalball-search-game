@@ -18,8 +18,8 @@
         <section class="setup-section" id="setupArea">
             <p>音が出るかチェック！</p>
             <div class="setup-controls">
-                <button id="leftRightBtn">🎧 左右確認</button>
-                <button id="hintBtn">💡 ヒント音</button>
+                <button id="leftRightBtn" type="button">🎧 左右確認</button>
+                <button id="hintBtn" type="button">💡 ヒント音</button>
             </div>
         </section>
 
@@ -29,7 +29,10 @@
         </section>
 
         <div id="gamePlayArea" class="hidden">
-            <section class="status-area">回答：<span id="currentInput"></span></section>
+            <section class="status-area">
+                <div id="status">回答：<span id="currentInput"></span></div>
+            </section>
+
             <section class="keypad-grid">
                 <button class="key" data-key="1"><img src="1.png" alt="1"></button>
                 <button class="key" data-key="2"><img src="2.png" alt="2"></button>
@@ -44,13 +47,17 @@
                 <button class="key text-btn" data-key="C">クリア</button>
                 <button class="key text-btn wide-btn" data-key="Enter">決定（確認）</button>
             </section>
-            <button id="stopBtn">音声停止</button>
+
+            <section class="controls" style="display: flex; gap: 10px; margin-top: 20px;">
+                <button id="stopBtn" type="button" style="flex: 1;">音声停止</button>
+                <button id="btnReturnFromGame" class="return-btn" type="button" style="flex: 1; margin-top: 0;">トップページにもどる</button>
+            </section>
         </div>
 
         <section id="rankingArea" class="hidden">
             <h2>ランキング</h2>
             <div id="scoreSubmitArea" style="display:none;">
-                <input type="text" id="nameInput" placeholder="名前" maxlength="10">
+                <input type="text" id="nameInput" placeholder="名前を入力" maxlength="10">
                 <button id="nameSubmitBtn">登録</button>
             </div>
             <div id="rankingList"></div>
