@@ -48,17 +48,18 @@
                 <button class="key text-btn wide-btn" data-key="Enter">決定（確認）</button>
             </section>
 
-            <section class="controls" style="display: flex; gap: 10px; margin-top: 20px;">
-                <button id="stopBtn" type="button" style="flex: 1;">音声停止</button>
-                <button id="btnReturnFromGame" class="return-btn" type="button" style="flex: 1; margin-top: 0;">トップページにもどる</button>
+            <section class="controls" style="display: flex; flex-direction: column; gap: 10px; margin-top: 25px;">
+                <button id="btnSwitchToPro" class="start-btn" style="padding: 15px; font-size: 1.2rem; border-color: #FFC000; background-color: #111;">🏆 選手権に挑戦する</button>
+                <button id="btnReturnFromGame" class="return-btn" type="button">トップページにもどる</button>
             </section>
         </div>
 
         <section id="rankingArea" class="hidden">
             <h2>ランキング</h2>
             <div id="scoreSubmitArea" style="display:none;">
-                <input type="text" id="nameInput" placeholder="名前を入力" maxlength="10">
-                <button id="nameSubmitBtn">登録</button>
+                <p>ランクイン！お名前を入力してください</p>
+                <input type="text" id="nameInput" placeholder="おなまえ" maxlength="10" style="padding: 10px; font-size: 1rem;">
+                <button id="nameSubmitBtn" style="padding: 10px 20px;">登録</button>
             </div>
             <div id="rankingList"></div>
             <button id="btnReturnToTop" class="return-btn">トップページにもどる</button>
@@ -66,6 +67,7 @@
 
         <footer><p>&copy; 2026 KGBA</p></footer>
     </main>
+
     <script src="script_v2.js"></script>
 </body>
 </html>
