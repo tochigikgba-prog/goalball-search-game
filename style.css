@@ -5,7 +5,6 @@
     --danger: #FF3B30;
     --btn-radius: 12px;
 }
-
 body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; text-align: center; }
 main { max-width: 800px; margin: 0 auto; padding: 15px; }
 header h1 { font-size: 1.4rem; color: var(--accent); }
@@ -28,6 +27,7 @@ header h1 { font-size: 1.4rem; color: var(--accent); }
 #currentInput { color: var(--accent); font-weight: bold; }
 #stopBtn { width: 100%; padding: 15px; border-radius: var(--btn-radius); border: 2px solid var(--danger); color: var(--danger); background: none; font-weight: bold; cursor: pointer; }
 
+/* 🌟 最初は隠す設定 🌟 */
 .hidden { display: none !important; }
 
 #rankingArea { margin-top: 30px; padding: 20px; background: #111; border-radius: 15px; border: 2px solid var(--accent); }
