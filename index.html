@@ -15,7 +15,7 @@
             <h1>ゴールボールサーチゲーム</h1>
         </header>
 
-        <section class="setup-section">
+        <section class="setup-section" id="setupArea">
             <p>まずは音が出るかチェック！</p>
             <div class="setup-controls">
                 <button id="leftRightBtn" type="button">🎧 左右確認</button>
@@ -23,45 +23,50 @@
             </div>
         </section>
 
-        <section class="mode-selection">
-            <div class="mode-switch-container">
-                <button id="modePractice" class="mode-btn">練習モード</button>
-                <button id="modeChamp" class="mode-btn">選手権モード</button>
+        <section class="mode-selection" id="modeSelectionArea">
+            <div class="mode-card">
+                <h2>練習モード</h2>
+                <button id="btnStartTraining" class="start-btn">練習をスタート</button>
+            </div>
+            <div class="mode-card">
+                <h2>選手権モード</h2>
+                <button id="btnStartPro" class="start-btn">選手権をスタート</button>
             </div>
         </section>
 
-        <section class="status-area">
-            <div id="status">回答：<span id="currentInput"></span></div>
-        </section>
+        <div id="gamePlayArea" class="hidden">
+            <section class="status-area">
+                <div id="status">回答：<span id="currentInput"></span></div>
+            </section>
 
-        <section class="controls">
-            <button id="stopBtn" type="button">音を止める</button>
-        </section>
+            <section class="keypad-grid">
+                <button class="key" data-key="1"><img src="1.png" alt="1"></button>
+                <button class="key" data-key="2"><img src="2.png" alt="2"></button>
+                <button class="key" data-key="3"><img src="3.png" alt="3"></button>
+                <button class="key" data-key="4"><img src="4.png" alt="4"></button>
+                <button class="key" data-key="4.5"><img src="45.png" alt="4.5"></button>
+                <button class="key" data-key="5"><img src="5.png" alt="5"></button>
+                <button class="key" data-key="6"><img src="6.png" alt="6"></button>
+                <button class="key" data-key="7"><img src="7.png" alt="7"></button>
+                <button class="key" data-key="8"><img src="8.png" alt="8"></button>
+                <button class="key" data-key="9"><img src="9.png" alt="9"></button>
+                <button class="key text-btn" data-key="C">クリア</button>
+                <button class="key text-btn wide-btn" data-key="Enter">決定（確認）</button>
+            </section>
 
-        <section class="keypad-grid">
-            <button class="key" data-key="1"><img src="1.png" alt="1"></button>
-            <button class="key" data-key="2"><img src="2.png" alt="2"></button>
-            <button class="key" data-key="3"><img src="3.png" alt="3"></button>
-            <button class="key" data-key="4"><img src="4.png" alt="4"></button>
-            <button class="key" data-key="5"><img src="5.png" alt="5"></button>
-            <button class="key" data-key="6"><img src="6.png" alt="6"></button>
-            <button class="key" data-key="7"><img src="7.png" alt="7"></button>
-            <button class="key" data-key="8"><img src="8.png" alt="8"></button>
-            <button class="key" data-key="9"><img src="9.png" alt="9"></button>
-            <button class="key text-btn" data-key="C">クリア</button>
-            <button class="key" data-key="0"><img src="0.png" alt="0"></button>
-            <button class="key text-btn" data-key="4.5">4.5</button>
-            <button class="key text-btn" data-key="Enter">決定（確認）</button>
-        </section>
+            <section class="controls">
+                <button id="stopBtn" type="button">音声停止</button>
+            </section>
+        </div>
 
-        <section id="rankingArea" style="display:none;">
+        <section id="rankingArea" class="hidden">
             <h2>ランキング</h2>
             <div id="scoreSubmitArea" style="display:none;">
                 <input type="text" id="nameInput" placeholder="名前を入力" maxlength="10">
                 <button id="nameSubmitBtn">登録</button>
             </div>
             <div id="rankingList"></div>
-            <button onclick="location.reload()" class="mode-btn" style="margin-top:20px;">タイトルに戻る</button>
+            <button id="btnReturnToTop" class="mode-btn">トップページにもどる</button>
         </section>
 
         <footer><p>&copy; 2026 KGBA</p></footer>
