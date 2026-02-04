@@ -1,6 +1,18 @@
-// Firebase設定
-const firebaseConfig = { /* ご自身のAPIキー等 */ };
-if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+// --- Firebase設定（画像から取得した本物の値） ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDwBUd2D1Mt8HlZbh9Mvpi95JP6P0F7S7E",
+  authDomain: "gsranking.firebaseapp.com",
+  projectId: "gsranking",
+  storageBucket: "gsranking.firebasestorage.app",
+  messagingSenderId: "876090875752",
+  appId: "1:876090875752:web:7841b486506842230ec0dd",
+  measurementId: "G-M1Y9F13D2E"
+};
+
+// Firebase初期化
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.firestore(); 
 
 const SOUND_PATH = "sound/"; 
@@ -14,7 +26,7 @@ const INPUT_FILES = {
 let playerInput = "", currentAudio = null, isGameStarted = false, currentCorrectAnswer = "", gameMode = "practice", score = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 左右確認・ヒント（unlockAudioで音の通り道を確保）
+    // 準備ボタン
     document.getElementById("leftRightBtn")?.addEventListener("click", () => { unlockAudio(); playSound('zunda_check.mp3'); });
     document.getElementById("hintBtn")?.addEventListener("click", () => { unlockAudio(); playSound('hint.mp3'); });
 
@@ -22,17 +34,18 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btnStartTraining")?.addEventListener("click", () => startGame("practice"));
     document.getElementById("btnStartPro")?.addEventListener("click", () => startGame("championship"));
 
-    // 選手権への切り替え
+    // 選手権への切り替え（練習モード中）
     document.getElementById("btnSwitchToPro")?.addEventListener("click", () => {
         stopCurrentAudio();
         startGame("championship");
     });
 
-    // キーパッド入力
+    // キー入力
     document.querySelectorAll(".key").forEach(btn => {
         btn.addEventListener("click", () => handleKeyInput(btn.getAttribute("data-key")));
     });
 
+    // スコア送信
     document.getElementById("nameSubmitBtn")?.addEventListener("click", submitScore);
     
     // もどるボタン
@@ -53,7 +66,6 @@ function startGame(selectedMode) {
     document.getElementById("rankingArea").classList.add("hidden");
     document.getElementById("gamePlayArea").classList.remove("hidden");
 
-    // モードに応じた開始音
     const startSound = (gameMode === "practice") ? "start_training.mp3" : "start_pro.mp3";
     playSound(startSound, () => setTimeout(nextQuestion, 1000));
 }
@@ -87,10 +99,9 @@ function checkAnswer() {
         playSound("seikai.mp3", () => setTimeout(nextQuestion, 800));
     } else {
         playSound("no.mp3", () => {
-            // 正解の音（answer_x.mp3）を鳴らす
             playSound(`answer_${currentCorrectAnswer}.mp3`, () => {
                 if (gameMode === "championship") endGame();
-                else setTimeout(nextQuestion, 1000); // 練習なら次へ
+                else setTimeout(nextQuestion, 1000);
             });
         });
     }
@@ -133,14 +144,19 @@ async function showRanking() {
             list.innerHTML += `<p>${rank}${d.name}様 - ${d.score}点</p>`;
             i++;
         });
-    } catch (e) { list.innerHTML = "取得失敗"; }
+    } catch (e) { list.innerHTML = "取得失敗"; console.error(e); }
 }
 
 async function submitScore() {
-    const name = document.getElementById("nameInput")?.value || "ななしさん";
+    const nameInput = document.getElementById("nameInput");
+    const name = (nameInput && nameInput.value) ? nameInput.value : "ななしさん";
     try {
-        await db.collection("GSRanking").add({ name: name, score: score, date: firebase.firestore.FieldValue.serverTimestamp() });
+        await db.collection("GSRanking").add({ 
+            name: name, 
+            score: score, 
+            date: firebase.firestore.FieldValue.serverTimestamp() 
+        });
         document.getElementById("scoreSubmitArea").style.display = "none";
         showRanking();
-    } catch (e) { alert("登録失敗"); }
+    } catch (e) { alert("登録失敗"); console.error(e); }
 }
