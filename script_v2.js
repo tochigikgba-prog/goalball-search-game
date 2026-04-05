@@ -54,6 +54,47 @@ document.addEventListener("DOMContentLoaded", () => {
             playSound('return.mp3', () => location.reload());
         });
     });
+
+    // --- 音声入力の実装 ---
+    const voiceBtn = document.getElementById("voiceInputBtn");
+    const nameInput = document.getElementById("nameInput");
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition && voiceBtn) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'ja-JP';
+        recognition.interimResults = false;
+
+        voiceBtn.addEventListener("click", () => {
+            recognition.start();
+            voiceBtn.textContent = "👂 聴いています...";
+            voiceBtn.style.background = "#FF0000";
+        });
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            nameInput.value = transcript.substring(0, 10);
+            
+            // 認識結果を音声で確認
+            const uttr = new SpeechSynthesisUtterance(nameInput.value + "、と入力しました。");
+            uttr.lang = "ja-JP";
+            window.speechSynthesis.speak(uttr);
+        };
+
+        recognition.onend = () => {
+            voiceBtn.textContent = "🎤 音声入力";
+            voiceBtn.style.background = "#444";
+        };
+
+        recognition.onerror = () => {
+            alert("音声認識に失敗しました。もう一度試してください。");
+            voiceBtn.textContent = "🎤 音声入力";
+            voiceBtn.style.background = "#444";
+        };
+    } else if (voiceBtn) {
+        // 対応していないブラウザではボタンを隠す
+        voiceBtn.style.display = "none";
+    }
 });
 
 function startGame(selectedMode) {
@@ -65,6 +106,10 @@ function startGame(selectedMode) {
     document.getElementById("modeSelectionArea").classList.add("hidden");
     document.getElementById("rankingArea").classList.add("hidden");
     document.getElementById("gamePlayArea").classList.remove("hidden");
+
+    // ゲーム開始時、最初のボタンにフォーカスを当てる（スクリーンリーダー用）
+    const firstKey = document.querySelector(".key");
+    if (firstKey) firstKey.focus();
 
     const startSound = (gameMode === "practice") ? "start_training.mp3" : "start_pro.mp3";
     playSound(startSound, () => setTimeout(nextQuestion, 1000));

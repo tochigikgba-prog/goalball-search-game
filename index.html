@@ -8,6 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
+
 <body>
     <main>
         <header>
@@ -24,42 +25,45 @@
         </section>
 
         <section class="mode-selection" id="modeSelectionArea">
-            <button id="btnStartTraining" class="start-btn">練習スタート</button>
-            <button id="btnStartPro" class="start-btn">選手権スタート</button>
+            <button id="btnStartTraining" class="start-btn" aria-label="練習モードをスタート">練習スタート</button>
+            <button id="btnStartPro" class="start-btn" aria-label="選手権モードをスタート">選手権スタート</button>
         </section>
 
         <div id="gamePlayArea" class="hidden">
-            <section class="status-area">回答：<span id="currentInput"></span></section>
+            <section class="status-area" aria-live="polite">回答：<span id="currentInput"></span></section>
 
             <section class="keypad-grid">
-                <button class="key" data-key="1"><img src="1.png" alt="1"></button>
-                <button class="key" data-key="2"><img src="2.png" alt="2"></button>
-                <button class="key" data-key="3"><img src="3.png" alt="3"></button>
-                <button class="key" data-key="4"><img src="4.png" alt="4"></button>
-                <button class="key" data-key="4.5"><img src="45.png" alt="4.5"></button>
-                <button class="key" data-key="5"><img src="5.png" alt="5"></button>
-                <button class="key" data-key="6"><img src="6.png" alt="6"></button>
-                <button class="key" data-key="7"><img src="7.png" alt="7"></button>
-                <button class="key" data-key="8"><img src="8.png" alt="8"></button>
-                <button class="key" data-key="9"><img src="9.png" alt="9"></button>
-                <button class="key text-btn" data-key="C">クリア</button>
-                <button class="key text-btn wide-btn" data-key="Enter">決定（確認）</button>
+                <button class="key" data-key="1" aria-label="1番"><img src="1.png" alt="1"></button>
+                <button class="key" data-key="2" aria-label="2番"><img src="2.png" alt="2"></button>
+                <button class="key" data-key="3" aria-label="3番"><img src="3.png" alt="3"></button>
+                <button class="key" data-key="4" aria-label="4番"><img src="4.png" alt="4"></button>
+                <button class="key" data-key="4.5" aria-label="4.5番 センター"><img src="45.png" alt="4.5"></button>
+                <button class="key" data-key="5" aria-label="5番"><img src="5.png" alt="5"></button>
+                <button class="key" data-key="6" aria-label="6番"><img src="6.png" alt="6"></button>
+                <button class="key" data-key="7" aria-label="7番"><img src="7.png" alt="7"></button>
+                <button class="key" data-key="8" aria-label="8番"><img src="8.png" alt="8"></button>
+                <button class="key" data-key="9" aria-label="9番"><img src="9.png" alt="9"></button>
+                <button class="key text-btn" data-key="C" aria-label="クリア">クリア</button>
+                <button class="key text-btn wide-btn" data-key="Enter" aria-label="決定">決定（確認）</button>
             </section>
 
             <section class="controls" style="display: flex; flex-direction: column; gap: 10px; margin-top: 25px;">
-                <button id="btnSwitchToPro" class="start-btn" style="padding: 15px; font-size: 1.2rem; border-color: #FFC000; background: #111;">🏆 選手権に挑戦する</button>
-                <button id="btnReturnFromGame" class="return-btn" type="button">トップページにもどる</button>
+                <button id="btnSwitchToPro" class="start-btn" style="padding: 15px; font-size: 1.2rem; border-color: #FFC000; background: #111;" aria-label="選手権に挑戦する">🏆 選手権に挑戦する</button>
+                <button id="btnReturnFromGame" class="return-btn" type="button" aria-label="トップページにもどる">トップページにもどる</button>
             </section>
         </div>
 
         <section id="rankingArea" class="hidden">
             <h2>ランキング</h2>
             <div id="scoreSubmitArea" style="display:none;">
-                <input type="text" id="nameInput" placeholder="おなまえ" maxlength="10">
-                <button id="nameSubmitBtn">登録</button>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <input type="text" id="nameInput" placeholder="おなまえ" maxlength="10" style="flex: 1; padding: 10px; font-size: 1rem;">
+                    <button id="voiceInputBtn" type="button" aria-label="音声でおなまえを入力する" style="padding: 10px; background: #444; color: white; border: 1px solid var(--accent); border-radius: 5px;">🎤 音声入力</button>
+                </div>
+                <button id="nameSubmitBtn" class="start-btn" style="width: 100%; padding: 15px; font-size: 1.2rem;">登録</button>
             </div>
             <div id="rankingList"></div>
-            <button id="btnReturnToTop" class="return-btn">トップページにもどる</button>
+            <button id="btnReturnToTop" class="return-btn" aria-label="トップページにもどる">トップページにもどる</button>
         </section>
 
         <footer><p>&copy; 2026 KGBA</p></footer>
