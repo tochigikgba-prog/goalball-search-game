@@ -24,13 +24,16 @@
             </div>
         </section>
 
-        <section class="mode-selection" id="modeSelectionArea">
+        <section class="mode-selection" id="modeSelection">
             <button id="btnStartTraining" class="start-btn" aria-label="練習モードをスタート">練習スタート</button>
             <button id="btnStartPro" class="start-btn" aria-label="選手権モードをスタート">選手権スタート</button>
         </section>
 
-        <div id="gamePlayArea" class="hidden">
-            <section class="status-area" aria-live="polite">回答：<span id="currentInput"></span></section>
+        <div id="gameArea" class="hidden">
+            <section class="status-area" aria-live="polite">
+                回答：<span id="currentInput"></span>
+                <div id="statusArea"></div>
+            </section>
 
             <section class="keypad-grid">
                 <button class="key" data-key="1" aria-label="1番"><img src="1.png" alt="1"></button>
@@ -55,12 +58,14 @@
 
         <section id="rankingArea" class="hidden">
             <h2>ランキング</h2>
+            <p style="font-size: 1.5rem; color: #FFC000;">今回のスコア: <span id="finalScore">0</span>点</p>
+            
             <div id="scoreSubmitArea" style="display:none;">
                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                     <input type="text" id="nameInput" placeholder="おなまえ" maxlength="10" style="flex: 1; padding: 10px; font-size: 1rem;">
                     <button id="voiceInputBtn" type="button" aria-label="音声でおなまえを入力する" style="padding: 10px; background: #444; color: white; border: 1px solid var(--accent); border-radius: 5px;">🎤 音声入力</button>
                 </div>
-                <button id="nameSubmitBtn" class="start-btn" style="width: 100%; padding: 15px; font-size: 1.2rem;">登録</button>
+                <button id="nameSubmitBtn" onclick="submitScore()" class="start-btn" style="width: 100%; padding: 15px; font-size: 1.2rem;">登録</button>
             </div>
             <div id="rankingList"></div>
             <button id="btnReturnToTop" class="return-btn" aria-label="トップページにもどる">トップページにもどる</button>
