@@ -4,60 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ゴールボールサーチゲーム</title>
-    <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; background-color: #f0f0f0; padding: 20px; }
+        .hidden { display: none; }
+        button { 
+            padding: 20px 40px; font-size: 1.5rem; margin: 10px; cursor: pointer;
+            border-radius: 10px; border: none; background-color: #4CAF50; color: white;
+        }
+        button:hover { background-color: #45a049; }
+        #statusArea { font-size: 1.2rem; margin: 20px; min-height: 1.5em; color: #333; }
+        #currentInput { font-size: 3rem; font-weight: bold; color: #e91e63; }
+        #rankingArea { background: white; padding: 20px; border-radius: 15px; max-width: 400px; margin: 20px auto; }
+    </style>
 </head>
-
 <body>
-    <main>
-        <header>
-            <img src="kgbalogo.png" alt="KGBAロゴ" id="kgbalogo">
-            <h1>ゴールボールサーチゲーム</h1>
-        </header>
 
-        <section class="mode-selection" id="modeSelection">
-            <button onclick="checkSound()">左右確認</button>
-            <button onclick="startPractice()" class="start-btn">練習スタート</button>
-            <button onclick="startChampionship()" class="start-btn">選手権スタート</button>
-        </section>
+    <h1>ゴールボールサーチゲーム なのだ！</h1>
 
-        <div id="gameArea" class="hidden">
-            <section class="status-area">
-                回答：<span id="currentInput"></span>
-                <div id="statusArea"></div>
-            </section>
+    <div id="modeSelection">
+        <button onclick="checkSound()">左右の音を確認する</button><br>
+        <button onclick="startPractice()">練習モード（5問）</button>
+        <button onclick="startChampionship()">選手権モード（無限）</button>
+    </div>
 
-            <section class="keypad-grid">
-                <button class="key" onclick="inputKey(1)"><img src="1.png" alt="1"></button>
-                <button class="key" onclick="inputKey(2)"><img src="2.png" alt="2"></button>
-                <button class="key" onclick="inputKey(3)"><img src="3.png" alt="3"></button>
-                <button class="key" onclick="inputKey(4)"><img src="4.png" alt="4"></button>
-                <button class="key" onclick="inputKey(4.5)"><img src="45.png" alt="4.5"></button>
-                <button class="key" onclick="inputKey(5)"><img src="5.png" alt="5"></button>
-                <button class="key" onclick="inputKey(6)"><img src="6.png" alt="6"></button>
-                <button class="key" onclick="inputKey(7)"><img src="7.png" alt="7"></button>
-                <button class="key" onclick="inputKey(8)"><img src="8.png" alt="8"></button>
-                <button class="key" onclick="inputKey(9)"><img src="9.png" alt="9"></button>
-                <button class="key text-btn" onclick="playSound('sound/input_clear.mp3')">クリア</button>
-                <button class="key text-btn wide-btn" onclick="location.reload()">タイトルへ</button>
-            </section>
+    <div id="gameArea" class="hidden">
+        <div id="statusArea">準備ができたらスタートなのだ</div>
+        <div id="currentInput">-</div>
+        <p>※マイクがオンになったら番号を答えてね！</p>
+    </div>
+
+    <div id="rankingArea" class="hidden">
+        <h2>結果発表</h2>
+        <p>スコア: <span id="finalScore">0</span> 点</p>
+        
+        <div id="scoreSubmitArea" style="display:none;">
+            <input type="text" id="nameInput" placeholder="お名前を入力（音声も可）" style="padding:10px; font-size:1rem;">
+            <button onclick="startVoiceInput()">声で名前を入れる</button>
+            <button onclick="submitScore()" style="background-color: #2196F3;">スコアを送信する</button>
         </div>
 
-        <section id="rankingArea" class="hidden">
-            <h2>ランキング</h2>
-            <p style="font-size: 1.5rem; color: #FFC000;">今回のスコア: <span id="finalScore">0</span>点</p>
-            <div id="scoreSubmitArea" style="display:none;">
-                <input type="text" id="nameInput" placeholder="おなまえ" maxlength="10" style="padding: 10px;">
-                <button onclick="submitScore()" class="start-btn">登録</button>
-                <button onclick="startVoiceInput()">🎤 声で入力</button>
+        <div id="rankingList">
             </div>
-            <div id="rankingList"></div>
-            <button onclick="location.reload()" class="return-btn">もどる</button>
-        </section>
+        <button onclick="location.reload()" style="background-color: #9e9e9e;">タイトルに戻る</button>
+    </div>
 
-        <footer><p>&copy; 2026 KGBA</p></footer>
-    </main>
-    <script src="script_v2.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

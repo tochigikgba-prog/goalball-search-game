@@ -10,7 +10,16 @@ let gameMode = "";
 // 出題されるボールの位置（0〜9、および4.5）
 const ballPositions = [0, 1, 2, 3, 4, 4.5, 5, 6, 7, 8, 9];
 
-// Firebaseの初期化（あなたのプロジェクト設定を反映しました）
+// 「どこ？」のファイルリスト
+const whereSounds = [
+    "sounds/where_1.mp3",
+    "sounds/where_2.mp3",
+    "sounds/where_3.mp3",
+    "sounds/where_4.mp3",
+    "sounds/where_5.mp3"
+];
+
+// Firebaseの初期化
 const firebaseConfig = {
     apiKey: "AIzaSyDwBUd2D1Mt8HlZbh9Mvpi95JP6P0F7S7E",
     authDomain: "gsranking.firebaseapp.com",
@@ -21,7 +30,6 @@ const firebaseConfig = {
     measurementId: "G-M1Y9F13D2E"
 };
 
-// Firebaseの初期化実行
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
@@ -29,13 +37,8 @@ const db = firebase.firestore();
 // 2. モード開始・左右確認処理
 // ==========================================
 
-/**
- * 左右確認ボタン
- */
 function checkSound() {
     const soundPath = "sound/zunda_check.mp3";
-    console.log("左右確認再生開始: " + soundPath);
-    
     const status = document.getElementById("statusArea");
     if (status) status.innerText = "ずんだもんが左右を確認中...";
 
@@ -79,16 +82,21 @@ function nextQuestion() {
     const randomIndex = Math.floor(Math.random() * ballPositions.length);
     currentCorrectAnswer = ballPositions[randomIndex];
     
-    playSound(`sound/question_${currentCorrectAnswer}.mp3`);
-    
-    document.getElementById("statusArea").innerText = "ボールはどこ？";
+    document.getElementById("statusArea").innerText = "試合開始...";
     document.getElementById("currentInput").innerText = "-"; 
-}
 
-function inputKey(num) {
-    document.getElementById("currentInput").innerText = num;
-    playSound(`sound/input_${num}.mp3`, () => {
-        checkAnswer(num);
+    // 1. 試合開始セット（クワイエット〜鈴の音）を再生
+    // ※ファイル名ルール: sound/set_0.mp3 等と仮定しています
+    // 修正後
+playSound(`sound/quiz_${currentCorrectAnswer}.mp3`, () => {
+        
+        // 2. 終わったらランダムに「どこ？」を再生
+        const randomDoko = whereSounds[Math.floor(Math.random() * whereSounds.length)];
+        playSound(randomDoko, () => {
+            
+            // 3. 「どこ？」が終わったらマイク起動！
+            startAnswerListening();
+        });
     });
 }
 
@@ -146,28 +154,40 @@ function endGame() {
     loadRanking();
 }
 
+// 名前入力用の音声認識
 function startVoiceInput() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-        alert("お使いのブラウザは音声入力に対応していません。");
-        return;
-    }
+    if (!SpeechRecognition) { alert("音声入力非対応です"); return; }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'ja-JP';
+    recognition.onresult = (event) => {
+        document.getElementById("nameInput").value = event.results[0][0].transcript;
+        document.getElementById("statusArea").innerText = "聞き取り完了：" + event.results[0][0].transcript;
+    };
+    recognition.start();
+}
+
+// 【追加】回答を聞き取るための音声認識関数
+function startAnswerListening() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) { console.log("音声認識非対応"); return; }
 
     const recognition = new SpeechRecognition();
     recognition.lang = 'ja-JP';
-
-    recognition.onstart = () => {
-        const status = document.getElementById("statusArea");
-        if (status) status.innerText = "お名前をどうぞ...";
-    };
+    document.getElementById("statusArea").innerText = "回答をどうぞ！";
 
     recognition.onresult = (event) => {
-        const voiceName = event.results[0][0].transcript;
-        document.getElementById("nameInput").value = voiceName;
-        const status = document.getElementById("statusArea");
-        if (status) status.innerText = "聞き取り完了：" + voiceName;
+        const transcript = event.results[0][0].transcript;
+        // 数字だけを抜き出す
+        const num = parseFloat(transcript.replace(/[^0-9.]/g, ''));
+        if (!isNaN(num)) {
+            document.getElementById("currentInput").innerText = num;
+            checkAnswer(num);
+        } else {
+            document.getElementById("statusArea").innerText = "数字が聞き取れませんでした…";
+            setTimeout(nextQuestion, 1000); // 再挑戦用に次へ
+        }
     };
-
     recognition.start();
 }
 
@@ -204,7 +224,7 @@ async function submitScore() {
         loadRanking();
     } catch (e) {
         console.error("スコア送信エラー:", e);
-        alert("送信に失敗しました。Firestoreのルールを確認してください。");
+        alert("送信に失敗しました。");
     }
 }
 
