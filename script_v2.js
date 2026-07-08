@@ -6,18 +6,24 @@ let practiceCount = 0;
 let practiceCorrect = 0; 
 let currentCorrectAnswer = null;
 let gameMode = ""; 
+let currentAudio = null; // 現在再生中の音声を保持
 
-// 出題されるボールの位置（0〜9、および4.5）
+// 出題されるボールの位置
 const ballPositions = [0, 1, 2, 3, 4, 4.5, 5, 6, 7, 8, 9];
 
-// 「どこ？」のファイルリスト
+// 「どこ？」のファイルリスト（soundフォルダ）
 const whereSounds = [
-    "sounds/where_1.mp3",
-    "sounds/where_2.mp3",
-    "sounds/where_3.mp3",
-    "sounds/where_4.mp3",
-    "sounds/where_5.mp3"
+    "sound/where_1.mp3",
+    "sound/where_2.mp3",
+    "sound/where_3.mp3",
+    "sound/where_4.mp3",
+    "sound/where_5.mp3"
 ];
+
+// ファイル名用にインデックスを正規化（4.5 -> 45 など）
+function fileIdFor(n) {
+    return String(n).replace('.', '');
+}
 
 // Firebaseの初期化
 const firebaseConfig = {
@@ -34,15 +40,49 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 // ==========================================
-// 2. モード開始・左右確認処理
+// 2. アクセシビリティ・スマホ操作強化（新機能なのだ！）
 // ==========================================
 
-function checkSound() {
-    const soundPath = "sound/zunda_check.mp3";
-    const status = document.getElementById("statusArea");
-    if (status) status.innerText = "ずんだもんが左右を確認中...";
+function setupGlobalControls() {
+    // A. 画面全体のタップ対応（スマホ・PC共通）
+    document.body.addEventListener('click', (e) => {
+        // 音が鳴っている時、かつボタン以外の場所を触ったら停止
+        if (currentAudio && e.target.tagName !== 'BUTTON') {
+            console.log("画面タップで停止したのだ！");
+            stopAllSounds();
+        }
+    }, true);
 
-    playSound(soundPath, () => {
+    // B. キーボード対応（PC用：スペースキーで停止）
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && currentAudio) {
+            console.log("スペースキーで停止したのだ！");
+            stopAllSounds();
+            e.preventDefault(); // 画面スクロール防止
+        }
+    });
+}
+
+// ==========================================
+// 3. モード開始・再生コントロール
+// ==========================================
+
+function stopAllSounds() {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+    }
+    const status = document.getElementById("statusArea");
+    if (status && gameMode === "") {
+        status.innerText = "音を止めたのだ。モードを選んでね。";
+    }
+}
+
+function checkSound() {
+    const status = document.getElementById("statusArea");
+    if (status) status.innerText = "ずんだもんが左右を確認中...（画面タップで停止）";
+    playSound("sound/zunda_check.mp3", () => {
         if (status) status.innerText = "準備ができたらモードを選んでね";
     });
 }
@@ -62,15 +102,13 @@ function startChampionship() {
     score = 0;
     document.getElementById("modeSelection").classList.add("hidden");
     document.getElementById("gameArea").classList.remove("hidden");
-    
-    // 選手権開始の音
     playSound("sound/start_pro.mp3", () => {
         nextQuestion();
     });
 }
 
 // ==========================================
-// 3. ゲーム進行ロジック
+// 4. ゲーム進行ロジック
 // ==========================================
 
 function nextQuestion() {
@@ -82,19 +120,15 @@ function nextQuestion() {
     const randomIndex = Math.floor(Math.random() * ballPositions.length);
     currentCorrectAnswer = ballPositions[randomIndex];
     
-    document.getElementById("statusArea").innerText = "試合開始...";
+    document.getElementById("statusArea").innerText = "よく聴くのだ...";
     document.getElementById("currentInput").innerText = "-"; 
 
-    // 1. 試合開始セット（クワイエット〜鈴の音）を再生
-    // ※ファイル名ルール: sound/set_0.mp3 等と仮定しています
-    // 修正後
-playSound(`sound/quiz_${currentCorrectAnswer}.mp3`, () => {
-        
+    // 1. 試合セット（quiz_X.mp3）を再生
+    playSound(`sound/quiz_${fileIdFor(currentCorrectAnswer)}.mp3`, () => {
         // 2. 終わったらランダムに「どこ？」を再生
         const randomDoko = whereSounds[Math.floor(Math.random() * whereSounds.length)];
         playSound(randomDoko, () => {
-            
-            // 3. 「どこ？」が終わったらマイク起動！
+            // 3. マイク起動
             startAnswerListening();
         });
     });
@@ -104,14 +138,19 @@ function checkAnswer(playerInput) {
     if (parseFloat(playerInput) === currentCorrectAnswer) {
         if (gameMode === "practice") practiceCorrect++;
         score++;
+        // 正解時のバイブレーション（スマホのみ）
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
         
         playSound("sound/seikai.mp3", () => {
             if (gameMode === "practice") practiceCount++;
             setTimeout(nextQuestion, 800);
         });
     } else {
+        // 不正解時のバイブレーション（スマホのみ）
+        if (navigator.vibrate) navigator.vibrate(500);
+
         playSound("sound/no.mp3", () => {
-            playSound(`sound/answer_${currentCorrectAnswer}.mp3`, () => {
+            playSound(`sound/answer_${fileIdFor(currentCorrectAnswer)}.mp3`, () => {
                 if (gameMode === "practice") {
                     practiceCount++;
                     setTimeout(nextQuestion, 1000);
@@ -124,82 +163,55 @@ function checkAnswer(playerInput) {
 }
 
 // ==========================================
-// 4. 終了処理・音声入力
+// 5. 音声入力処理
 // ==========================================
 
-function finishPractice() {
-    const statusArea = document.getElementById("statusArea");
-    statusArea.innerText = `練習終了！成績：5問中 ${practiceCorrect}問 正解`;
-
-    playSound("sound/otsukare.mp3", () => {
-        playSound(`sound/input_${practiceCorrect}.mp3`, () => {
-            playSound("sound/correct_is.mp3", () => {
-                setTimeout(() => {
-                    location.reload(); 
-                }, 4000);
-            });
-        });
-    });
-}
-
-function endGame() {
-    document.getElementById("gameArea").classList.add("hidden");
-    document.getElementById("rankingArea").classList.remove("hidden");
-    document.getElementById("finalScore").innerText = score;
-    
-    if (score > 0) {
-        document.getElementById("scoreSubmitArea").style.display = "block";
-    }
-    
-    loadRanking();
-}
-
-// 名前入力用の音声認識
-function startVoiceInput() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) { alert("音声入力非対応です"); return; }
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'ja-JP';
-    recognition.onresult = (event) => {
-        document.getElementById("nameInput").value = event.results[0][0].transcript;
-        document.getElementById("statusArea").innerText = "聞き取り完了：" + event.results[0][0].transcript;
-    };
-    recognition.start();
-}
-
-// 【追加】回答を聞き取るための音声認識関数
 function startAnswerListening() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) { console.log("音声認識非対応"); return; }
+    if (!SpeechRecognition) return;
 
     const recognition = new SpeechRecognition();
     recognition.lang = 'ja-JP';
-    document.getElementById("statusArea").innerText = "回答をどうぞ！";
+    document.getElementById("statusArea").innerText = "どこなのだ？（番号を言ってね）";
 
     recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        // 数字だけを抜き出す
         const num = parseFloat(transcript.replace(/[^0-9.]/g, ''));
         if (!isNaN(num)) {
             document.getElementById("currentInput").innerText = num;
             checkAnswer(num);
         } else {
-            document.getElementById("statusArea").innerText = "数字が聞き取れませんでした…";
-            setTimeout(nextQuestion, 1000); // 再挑戦用に次へ
+            document.getElementById("statusArea").innerText = "聞き取れなかったのだ。もう一度！";
+            setTimeout(startAnswerListening, 1000);
         }
     };
     recognition.start();
 }
 
+function startVoiceInput() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'ja-JP';
+    recognition.onresult = (event) => {
+        document.getElementById("nameInput").value = event.results[0][0].transcript;
+    };
+    recognition.start();
+}
+
 // ==========================================
-// 5. 音声再生のコア関数
+// 6. コア関数・ランキング
 // ==========================================
 
 function playSound(file, callback) {
-    const audio = new Audio(file);
-    audio.play().then(() => {
+    stopAllSounds();
+    currentAudio = new Audio(file);
+    currentAudio.play().then(() => {
         if (callback) {
-            audio.onended = callback;
+            currentAudio.onended = () => {
+                currentAudio = null;
+                callback();
+            };
         }
     }).catch(e => {
         console.error("再生エラー:", file, e);
@@ -207,41 +219,41 @@ function playSound(file, callback) {
     });
 }
 
-// ==========================================
-// 6. ランキング処理（Firebase）
-// ==========================================
+function finishPractice() {
+    document.getElementById("statusArea").innerText = `練習終了！5問中 ${practiceCorrect}問 正解なのだ！`;
+    playSound("sound/otsukare.mp3", () => {
+        setTimeout(() => { location.reload(); }, 4000);
+    });
+}
+
+function endGame() {
+    document.getElementById("gameArea").classList.add("hidden");
+    document.getElementById("rankingArea").classList.remove("hidden");
+    document.getElementById("finalScore").innerText = score;
+    if (score > 0) document.getElementById("scoreSubmitArea").style.display = "block";
+    loadRanking();
+}
 
 async function submitScore() {
-    const nameInput = document.getElementById("nameInput");
-    const name = nameInput.value || "ななし";
-    try {
-        await db.collection("rankings").add({
-            name: name,
-            score: score,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        document.getElementById("scoreSubmitArea").style.display = "none";
-        loadRanking();
-    } catch (e) {
-        console.error("スコア送信エラー:", e);
-        alert("送信に失敗しました。");
-    }
+    const name = document.getElementById("nameInput").value || "ななし";
+    await db.collection("rankings").add({
+        name: name,
+        score: score,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById("scoreSubmitArea").style.display = "none";
+    loadRanking();
 }
 
 async function loadRanking() {
-    try {
-        const snapshot = await db.collection("rankings")
-            .orderBy("score", "desc")
-            .limit(10)
-            .get();
-        
-        let html = "<h3>TOP 10</h3>";
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            html += `<p>${data.name}: ${data.score}点</p>`;
-        });
-        document.getElementById("rankingList").innerHTML = html;
-    } catch (e) {
-        console.error("ランキング読み取りエラー:", e);
-    }
+    const snapshot = await db.collection("rankings").orderBy("score", "desc").limit(10).get();
+    let html = "<h3>TOP 10</h3>";
+    snapshot.forEach(doc => {
+        const data = doc.data();
+        html += `<p>${data.name}: ${data.score}点</p>`;
+    });
+    document.getElementById("rankingList").innerHTML = html;
 }
+
+// 読み込み完了時にコントロールをセットアップ
+window.addEventListener('load', setupGlobalControls);
