@@ -293,6 +293,8 @@ function startAnswerListening(retryCount = 0) {
                     setTimeout(() => startAnswerListening(retryCount + 1), 700);
                 } else {
                     if (status) status.innerText = "聞き取れなかったのだ。ボタンで回答するか、もう一度挑戦してね。";
+                    setAnswerButtonsVisible(true);
+                    if (hint) hint.innerText = 'ボタンで番号を選択してね！';
                     playSound('sound/hint.mp3');
                 }
             }
@@ -304,6 +306,8 @@ function startAnswerListening(retryCount = 0) {
                 setTimeout(() => startAnswerListening(retryCount + 1), 700);
             } else {
                 if (status) status.innerText = "認識エラーが発生したのだ。ボタンで回答するか、マイク設定を確認してね。";
+                setAnswerButtonsVisible(true);
+                if (hint) hint.innerText = 'ボタンで番号を選択してね！';
             }
         };
 
@@ -417,15 +421,16 @@ function testFirestoreConnection() {
     }
     db.collection('rankings').limit(1).get().then(() => {
         console.log('Firestore: connection OK');
-        // 一時的な表示（ゲーム中でなければ表示）
-        if (status && gameMode === "") {
+        if (status && gameMode !== "") {
             const prev = status.innerText;
             status.innerText = 'ランキング接続 OK';
-            setTimeout(() => { if (status && gameMode === "") status.innerText = prev; }, 2000);
+            setTimeout(() => { if (status && gameMode !== "") status.innerText = prev; }, 2000);
         }
     }).catch(err => {
         console.error('Firestore connection error', err);
-        if (status) status.innerText = `Firestore 接続エラー: ${err.message || err}`;
+        if (status && gameMode !== "") {
+            status.innerText = `Firestore 接続エラー: ${err.message || err}`;
+        }
     });
 }
 
