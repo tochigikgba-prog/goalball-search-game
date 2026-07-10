@@ -175,10 +175,53 @@ function startAnswerListening() {
     document.getElementById("statusArea").innerText = "どこなのだ？（番号を言ってね）";
 
     recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        const num = parseFloat(transcript.replace(/[^0-9.]/g, ''));
+        const transcript = event.results[0][0].transcript || '';
+
+        // Normalize common Japanese number words (kanji/hiragana/katakana) to digits
+        function normalizeJapaneseNums(s) {
+            const mapChars = {
+                '０':'0','１':'1','２':'2','３':'3','４':'4','５':'5','６':'6','７':'7','８':'8','９':'9',
+                '〇':'0','零':'0','一':'1','二':'2','三':'3','四':'4','五':'5','六':'6','七':'7','八':'8','九':'9'
+            };
+            let out = s;
+            // replace kanji/zenkaku digits
+            out = out.split('').map(ch => mapChars[ch] !== undefined ? mapChars[ch] : ch).join('');
+            // replace kana words for 0-9 (simple common ones)
+            const kanaMap = {
+                'いち':'1','に':'2','さん':'3','よん':'4','し':'4','ご':'5','ろく':'6','なな':'7','しち':'7','はち':'8','きゅう':'9','く':'9','ぜろ':'0','れい':'0',
+                'イチ':'1','ニ':'2','サン':'3','ヨン':'4','シ':'4','ゴ':'5','ロク':'6','ナナ':'7','シチ':'7','ハチ':'8','キュウ':'9','ク':'9','ゼロ':'0'
+            };
+            // replace kana tokens (longer first)
+            Object.keys(kanaMap).sort((a,b)=>b.length-a.length).forEach(k => {
+                out = out.replace(new RegExp(k,'g'), kanaMap[k]);
+            });
+            return out;
+        }
+
+        let normalized = transcript;
+        normalized = normalized.replace(/\s+/g, '');
+        normalized = normalizeJapaneseNums(normalized);
+        // Treat '点'/'てん'/'テン' as decimal point
+        normalized = normalized.replace(/[点てんテン]/g, '.');
+        // Keep only digits and dot
+        let cleaned = normalized.replace(/[^0-9.]/g, '');
+
+        let num = parseFloat(cleaned);
+
+        // If recognition returned an integer like 45 but current correct answer is 4.5 (file id 45), adjust
+        if ((isNaN(num) || Number.isInteger(num)) && currentCorrectAnswer != null) {
+            const expectedFileId = fileIdFor(currentCorrectAnswer);
+            const onlyDigits = cleaned.replace(/\./g, '');
+            if (onlyDigits === expectedFileId) {
+                num = currentCorrectAnswer;
+                cleaned = String(currentCorrectAnswer);
+            }
+        }
+
         if (!isNaN(num)) {
-            document.getElementById("currentInput").innerText = num;
+            // Display with decimal if needed
+            const display = String(cleaned).includes('.') ? String(num) : String(num);
+            document.getElementById("currentInput").innerText = display;
             checkAnswer(num);
         } else {
             document.getElementById("statusArea").innerText = "聞き取れなかったのだ。もう一度！";

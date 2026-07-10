@@ -10,13 +10,14 @@
         body { 
             font-family: sans-serif; 
             text-align: center; 
-            background-color: #f0f0f0; 
+            background-color: #000; 
+            color: #fff;
             padding: 10px;
             margin: 0;
             /* 画面全体のどこを触っても反応しやすくするための設定 */
             min-height: 100vh;
         }
-        h1 { font-size: 1.8rem; color: #2e7d32; }
+        h1 { font-size: 1.8rem; color: #ffffff; }
         .hidden { display: none; }
         
         /* ボタンを大きく押しやすく（スマホ・インクルーシブ対応） */
@@ -31,28 +32,28 @@
             cursor: pointer;
             border-radius: 15px; 
             border: none; 
-            background-color: #4CAF50; 
-            color: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background-color: #333333; 
+            color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
             transition: transform 0.1s;
         }
-        button:active { transform: scale(0.98); background-color: #45a049; }
+        button:active { transform: scale(0.98); background-color: #444444; }
         
         /* 停止ボタン用の赤色 */
-        .btn-stop { background-color: #f44336; }
+        .btn-stop { background-color: #b71c1c; }
         
         #statusArea { 
             font-size: 1.4rem; 
             margin: 20px; 
             min-height: 2em; 
-            color: #333; 
-            background: #fff;
+            color: #ffffff; 
+            background: #111111;
             padding: 15px;
             border-radius: 10px;
         }
-        #currentInput { font-size: 4rem; font-weight: bold; color: #e91e63; margin: 10px; }
+        #currentInput { font-size: 4rem; font-weight: bold; color: #ffd54f; margin: 10px; }
         #rankingArea { 
-            background: white; 
+            background: #111111; 
             padding: 20px; 
             border-radius: 15px; 
             max-width: 500px; 
@@ -64,14 +65,16 @@
             font-size: 1.2rem;
             margin-bottom: 10px;
             border-radius: 8px;
-            border: 1px solid #ccc;
+            border: 1px solid #444444;
+            background: #222222;
+            color: #ffffff;
         }
     </style>
 </head>
 <body>
 
-    <h1>ゴールボールサーチゲーム なのだ！</h1>
-    <div id="statusArea">準備ができたらスタートなのだ</div>
+    <h1>ゴールボールサーチゲーム</h1>
+    <div id="statusArea">準備ができたらスタート</div>
 
     <div id="modeSelection">
         
