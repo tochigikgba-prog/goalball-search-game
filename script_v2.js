@@ -289,13 +289,8 @@ function startAnswerListening(retryCount = 0) {
         recognition.start();
     };
 
-    // Play a short beep before starting recognition to indicate speak now
-    // Use existing file if available
-    playSound('sound/input_dot.mp3', () => {
-        setTimeout(() => {
-            doRecognition();
-        }, 300);
-    });
+    // Start recognition immediately (beep removed)
+    doRecognition();
 }
 
 function startVoiceInput() {
@@ -348,19 +343,31 @@ function endGame() {
     document.getElementById("gameArea").classList.add("hidden");
     document.getElementById("rankingArea").classList.remove("hidden");
     document.getElementById("finalScore").innerText = score;
-    if (score > 0) document.getElementById("scoreSubmitArea").style.display = "block";
+    // 常にスコア送信エリアを表示（選手権モードでも保存できるように）
+    document.getElementById("scoreSubmitArea").style.display = "block";
     loadRanking();
 }
 
 async function submitScore() {
-    const name = document.getElementById("nameInput").value || "ななし";
-    await db.collection("rankings").add({
-        name: name,
-        score: score,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    document.getElementById("scoreSubmitArea").style.display = "none";
-    loadRanking();
+    const status = document.getElementById("statusArea");
+    const submitBtn = document.querySelector('#scoreSubmitArea button[onclick="submitScore()"]');
+    try {
+        const name = document.getElementById("nameInput").value || "ななし";
+        if (status) status.innerText = "スコアを送信しています...";
+        if (submitBtn) submitBtn.disabled = true;
+        await db.collection("rankings").add({
+            name: name,
+            score: score,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        if (status) status.innerText = "スコアを送信しました。ありがとう！";
+        document.getElementById("scoreSubmitArea").style.display = "none";
+        loadRanking();
+    } catch (err) {
+        console.error('submitScore error', err);
+        if (status) status.innerText = `送信に失敗しました: ${err.message || err}`;
+        if (submitBtn) submitBtn.disabled = false;
+    }
 }
 
 async function loadRanking() {
@@ -373,5 +380,30 @@ async function loadRanking() {
     document.getElementById("rankingList").innerHTML = html;
 }
 
-// 読み込み完了時にコントロールをセットアップ
-window.addEventListener('load', setupGlobalControls);
+// Firestore接続テスト
+function testFirestoreConnection() {
+    const status = document.getElementById("statusArea");
+    if (!db) {
+        console.error('Firestore not initialized');
+        if (status) status.innerText = 'Firestore未初期化';
+        return;
+    }
+    db.collection('rankings').limit(1).get().then(() => {
+        console.log('Firestore: connection OK');
+        // 一時的な表示（ゲーム中でなければ表示）
+        if (status && gameMode === "") {
+            const prev = status.innerText;
+            status.innerText = 'ランキング接続 OK';
+            setTimeout(() => { if (status && gameMode === "") status.innerText = prev; }, 2000);
+        }
+    }).catch(err => {
+        console.error('Firestore connection error', err);
+        if (status) status.innerText = `Firestore 接続エラー: ${err.message || err}`;
+    });
+}
+
+// 読み込み完了時にコントロールをセットアップし、Firestore接続を確認
+window.addEventListener('load', () => {
+    setupGlobalControls();
+    testFirestoreConnection();
+});
