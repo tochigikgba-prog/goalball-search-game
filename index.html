@@ -70,17 +70,22 @@
             color: #ffffff;
         }
         .btn-back {
+            display: none;
             position: fixed;
             top: 12px;
             right: 12px;
             background: #444444;
             color: #ffffff;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 1rem;
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 0.9rem;
             z-index: 999;
-            border: none;
+            border: 1px solid #666666;
             cursor: pointer;
+            width: auto;
+            min-height: auto;
+            margin: 0;
+            box-shadow: none;
         }
     </style>
 </head>
@@ -88,7 +93,7 @@
 
     <h1>ゴールボールサーチゲーム</h1>
     <div id="statusArea">準備ができたらスタート</div>
-    <button class="btn-back" onclick="goHome()" aria-label="もどる">もどる</button>
+    <button id="backButton" class="btn-back" style="display:none" onclick="goHome()" aria-label="もどる">もどる</button>
 
     <div id="modeSelection">
         

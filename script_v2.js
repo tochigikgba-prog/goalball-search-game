@@ -97,6 +97,8 @@ function setupGlobalControls() {
             e.preventDefault(); // 画面スクロール防止
         }
     });
+    // 初期状態ではトップなので戻るボタンを非表示にする
+    setBackButtonVisible(false);
 }
 
 // ==========================================
@@ -128,6 +130,12 @@ function goHome() {
     if (status) status.innerText = "タイトルに戻ったのだ。モードを選んでね。";
 }
 
+function setBackButtonVisible(show) {
+    const b = document.getElementById('backButton');
+    if (!b) return;
+    b.style.display = show ? 'inline-block' : 'none';
+}
+
 function checkSound() {
     const status = document.getElementById("statusArea");
     if (status) status.innerText = "ずんだもんが左右を確認中...（画面タップで停止）";
@@ -143,6 +151,7 @@ function startPractice() {
     practiceCorrect = 0;
     document.getElementById("modeSelection").classList.add("hidden");
     document.getElementById("gameArea").classList.remove("hidden");
+    setBackButtonVisible(true);
     nextQuestion();
 }
 
@@ -151,6 +160,7 @@ function startChampionship() {
     score = 0;
     document.getElementById("modeSelection").classList.add("hidden");
     document.getElementById("gameArea").classList.remove("hidden");
+    setBackButtonVisible(true);
     playSound("sound/start_pro.mp3", () => {
         nextQuestion();
     });
@@ -223,58 +233,69 @@ function startAnswerListening(retryCount = 0) {
         return;
     }
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'ja-JP';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 5;
     if (status) status.innerText = "どこなのだ？（番号を言ってね）";
 
-    let handled = false;
-    recognition.onresult = (event) => {
-        const results = event.results[0];
-        for (let i = 0; i < results.length; i++) {
-            const alt = results[i].transcript || '';
-            const altNorm = alt.replace(/\s+/g, '');
-            // check for 'もどる' command
-            if (/もどる|戻る/.test(altNorm)) {
-                handled = true;
-                goHome();
-                return;
-            }
-            const num = parseSpokenNumber(alt);
-            if (num !== null) {
-                handled = true;
-                document.getElementById("currentInput").innerText = String(num).includes('.') ? String(num) : String(num);
-                checkAnswer(num);
-                return;
-            }
-        }
+    const doRecognition = () => {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'ja-JP';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 5;
 
-        if (!handled) {
+        let handled = false;
+        recognition.onresult = (event) => {
+            const results = event.results[0];
+            for (let i = 0; i < results.length; i++) {
+                const alt = results[i].transcript || '';
+                const altNorm = alt.replace(/\s+/g, '');
+                // check for 'もどる' command
+                if (/もどる|戻る/.test(altNorm)) {
+                    handled = true;
+                    goHome();
+                    return;
+                }
+                const num = parseSpokenNumber(alt);
+                if (num !== null) {
+                    handled = true;
+                    document.getElementById("currentInput").innerText = String(num).includes('.') ? String(num) : String(num);
+                    checkAnswer(num);
+                    return;
+                }
+            }
+
+            if (!handled) {
+                if (retryCount < 2) {
+                    if (status) status.innerText = "聞き取れなかったのだ。もう一度試すのだ...";
+                    setTimeout(() => startAnswerListening(retryCount + 1), 700);
+                } else {
+                    if (status) status.innerText = "聞き取れなかったのだ。ボタンで回答するか、もう一度挑戦してね。";
+                    playSound('sound/hint.mp3');
+                }
+            }
+        };
+
+        recognition.onerror = (e) => {
+            console.error('Recognition error', e);
             if (retryCount < 2) {
-                if (status) status.innerText = "聞き取れなかったのだ。もう一度試すのだ...";
                 setTimeout(() => startAnswerListening(retryCount + 1), 700);
             } else {
-                if (status) status.innerText = "聞き取れなかったのだ。ボタンで回答するか、もう一度挑戦してね。";
-                playSound('sound/hint.mp3');
+                if (status) status.innerText = "認識エラーが発生したのだ。ボタンで回答するか、マイク設定を確認してね。";
             }
-        }
+        };
+
+        recognition.onend = () => {
+            // nothing specific here
+        };
+
+        recognition.start();
     };
 
-    recognition.onerror = (e) => {
-        console.error('Recognition error', e);
-        if (retryCount < 2) {
-            setTimeout(() => startAnswerListening(retryCount + 1), 700);
-        } else {
-            if (status) status.innerText = "認識エラーが発生したのだ。ボタンで回答するか、マイク設定を確認してね。";
-        }
-    };
-
-    recognition.onend = () => {
-        // onend will fire after onresult; if nothing handled, onresult paths will deal with retry
-    };
-
-    recognition.start();
+    // Play a short beep before starting recognition to indicate speak now
+    // Use existing file if available
+    playSound('sound/input_dot.mp3', () => {
+        setTimeout(() => {
+            doRecognition();
+        }, 300);
+    });
 }
 
 function startVoiceInput() {
