@@ -25,6 +25,42 @@ function fileIdFor(n) {
     return String(n).replace('.', '');
 }
 
+// 音声テキストを正規化して数字に変換する（成功->number, 失敗->null）
+function normalizeJapaneseNums(s) {
+    if (!s) return '';
+    const mapChars = {
+        '０':'0','１':'1','２':'2','３':'3','４':'4','５':'5','６':'6','７':'7','８':'8','９':'9',
+        '〇':'0','零':'0','一':'1','二':'2','三':'3','四':'4','五':'5','六':'6','七':'7','八':'8','九':'9'
+    };
+    let out = s;
+    out = out.split('').map(ch => mapChars[ch] !== undefined ? mapChars[ch] : ch).join('');
+    const kanaMap = {
+        'いち':'1','に':'2','さん':'3','よん':'4','し':'4','ご':'5','ろく':'6','なな':'7','しち':'7','はち':'8','きゅう':'9','く':'9','ぜろ':'0','れい':'0',
+        'イチ':'1','ニ':'2','サン':'3','ヨン':'4','シ':'4','ゴ':'5','ロク':'6','ナナ':'7','シチ':'7','ハチ':'8','キュウ':'9','ク':'9','ゼロ':'0'
+    };
+    Object.keys(kanaMap).sort((a,b)=>b.length-a.length).forEach(k => {
+        out = out.replace(new RegExp(k,'g'), kanaMap[k]);
+    });
+    return out;
+}
+
+function parseSpokenNumber(transcript) {
+    if (!transcript) return null;
+    let normalized = transcript.replace(/\s+/g, '');
+    normalized = normalizeJapaneseNums(normalized);
+    normalized = normalized.replace(/[点てんテン]/g, '.');
+    let cleaned = normalized.replace(/[^0-9.]/g, '');
+    let num = parseFloat(cleaned);
+    if ((isNaN(num) || Number.isInteger(num)) && currentCorrectAnswer != null) {
+        const expectedFileId = fileIdFor(currentCorrectAnswer);
+        const onlyDigits = cleaned.replace(/\./g, '');
+        if (onlyDigits === expectedFileId) {
+            return currentCorrectAnswer;
+        }
+    }
+    return isNaN(num) ? null : num;
+}
+
 // Firebaseの初期化
 const firebaseConfig = {
     apiKey: "AIzaSyDwBUd2D1Mt8HlZbh9Mvpi95JP6P0F7S7E",
@@ -77,6 +113,19 @@ function stopAllSounds() {
     if (status && gameMode === "") {
         status.innerText = "音を止めたのだ。モードを選んでね。";
     }
+}
+
+function goHome() {
+    stopAllSounds();
+    gameMode = "";
+    const mode = document.getElementById("modeSelection");
+    const game = document.getElementById("gameArea");
+    const ranking = document.getElementById("rankingArea");
+    if (game) game.classList.add("hidden");
+    if (ranking) ranking.classList.add("hidden");
+    if (mode) mode.classList.remove("hidden");
+    const status = document.getElementById("statusArea");
+    if (status) status.innerText = "タイトルに戻ったのだ。モードを選んでね。";
 }
 
 function checkSound() {
@@ -166,68 +215,65 @@ function checkAnswer(playerInput) {
 // 5. 音声入力処理
 // ==========================================
 
-function startAnswerListening() {
+function startAnswerListening(retryCount = 0) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) return;
+    const status = document.getElementById("statusArea");
+    if (!SpeechRecognition) {
+        if (status) status.innerText = "音声認識が利用できません。ブラウザを確認してね。";
+        return;
+    }
 
     const recognition = new SpeechRecognition();
     recognition.lang = 'ja-JP';
-    document.getElementById("statusArea").innerText = "どこなのだ？（番号を言ってね）";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 5;
+    if (status) status.innerText = "どこなのだ？（番号を言ってね）";
 
+    let handled = false;
     recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript || '';
-
-        // Normalize common Japanese number words (kanji/hiragana/katakana) to digits
-        function normalizeJapaneseNums(s) {
-            const mapChars = {
-                '０':'0','１':'1','２':'2','３':'3','４':'4','５':'5','６':'6','７':'7','８':'8','９':'9',
-                '〇':'0','零':'0','一':'1','二':'2','三':'3','四':'4','五':'5','六':'6','七':'7','八':'8','九':'9'
-            };
-            let out = s;
-            // replace kanji/zenkaku digits
-            out = out.split('').map(ch => mapChars[ch] !== undefined ? mapChars[ch] : ch).join('');
-            // replace kana words for 0-9 (simple common ones)
-            const kanaMap = {
-                'いち':'1','に':'2','さん':'3','よん':'4','し':'4','ご':'5','ろく':'6','なな':'7','しち':'7','はち':'8','きゅう':'9','く':'9','ぜろ':'0','れい':'0',
-                'イチ':'1','ニ':'2','サン':'3','ヨン':'4','シ':'4','ゴ':'5','ロク':'6','ナナ':'7','シチ':'7','ハチ':'8','キュウ':'9','ク':'9','ゼロ':'0'
-            };
-            // replace kana tokens (longer first)
-            Object.keys(kanaMap).sort((a,b)=>b.length-a.length).forEach(k => {
-                out = out.replace(new RegExp(k,'g'), kanaMap[k]);
-            });
-            return out;
-        }
-
-        let normalized = transcript;
-        normalized = normalized.replace(/\s+/g, '');
-        normalized = normalizeJapaneseNums(normalized);
-        // Treat '点'/'てん'/'テン' as decimal point
-        normalized = normalized.replace(/[点てんテン]/g, '.');
-        // Keep only digits and dot
-        let cleaned = normalized.replace(/[^0-9.]/g, '');
-
-        let num = parseFloat(cleaned);
-
-        // If recognition returned an integer like 45 but current correct answer is 4.5 (file id 45), adjust
-        if ((isNaN(num) || Number.isInteger(num)) && currentCorrectAnswer != null) {
-            const expectedFileId = fileIdFor(currentCorrectAnswer);
-            const onlyDigits = cleaned.replace(/\./g, '');
-            if (onlyDigits === expectedFileId) {
-                num = currentCorrectAnswer;
-                cleaned = String(currentCorrectAnswer);
+        const results = event.results[0];
+        for (let i = 0; i < results.length; i++) {
+            const alt = results[i].transcript || '';
+            const altNorm = alt.replace(/\s+/g, '');
+            // check for 'もどる' command
+            if (/もどる|戻る/.test(altNorm)) {
+                handled = true;
+                goHome();
+                return;
+            }
+            const num = parseSpokenNumber(alt);
+            if (num !== null) {
+                handled = true;
+                document.getElementById("currentInput").innerText = String(num).includes('.') ? String(num) : String(num);
+                checkAnswer(num);
+                return;
             }
         }
 
-        if (!isNaN(num)) {
-            // Display with decimal if needed
-            const display = String(cleaned).includes('.') ? String(num) : String(num);
-            document.getElementById("currentInput").innerText = display;
-            checkAnswer(num);
-        } else {
-            document.getElementById("statusArea").innerText = "聞き取れなかったのだ。もう一度！";
-            setTimeout(startAnswerListening, 1000);
+        if (!handled) {
+            if (retryCount < 2) {
+                if (status) status.innerText = "聞き取れなかったのだ。もう一度試すのだ...";
+                setTimeout(() => startAnswerListening(retryCount + 1), 700);
+            } else {
+                if (status) status.innerText = "聞き取れなかったのだ。ボタンで回答するか、もう一度挑戦してね。";
+                playSound('sound/hint.mp3');
+            }
         }
     };
+
+    recognition.onerror = (e) => {
+        console.error('Recognition error', e);
+        if (retryCount < 2) {
+            setTimeout(() => startAnswerListening(retryCount + 1), 700);
+        } else {
+            if (status) status.innerText = "認識エラーが発生したのだ。ボタンで回答するか、マイク設定を確認してね。";
+        }
+    };
+
+    recognition.onend = () => {
+        // onend will fire after onresult; if nothing handled, onresult paths will deal with retry
+    };
+
     recognition.start();
 }
 
@@ -236,9 +282,17 @@ function startVoiceInput() {
     if (!SpeechRecognition) return;
     const recognition = new SpeechRecognition();
     recognition.lang = 'ja-JP';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 3;
     recognition.onresult = (event) => {
-        document.getElementById("nameInput").value = event.results[0][0].transcript;
+        const t = event.results[0][0].transcript || '';
+        if (/もどる|戻る/.test(t.replace(/\s+/g,''))) {
+            goHome();
+            return;
+        }
+        document.getElementById("nameInput").value = t;
     };
+    recognition.onerror = (e) => { console.error('Voice input error', e); };
     recognition.start();
 }
 

@@ -69,12 +69,26 @@
             background: #222222;
             color: #ffffff;
         }
+        .btn-back {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            background: #444444;
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 1rem;
+            z-index: 999;
+            border: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
     <h1>ゴールボールサーチゲーム</h1>
     <div id="statusArea">準備ができたらスタート</div>
+    <button class="btn-back" onclick="goHome()" aria-label="もどる">もどる</button>
 
     <div id="modeSelection">
         
