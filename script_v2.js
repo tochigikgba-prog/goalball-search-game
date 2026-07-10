@@ -7,6 +7,7 @@ let practiceCorrect = 0;
 let currentCorrectAnswer = null;
 let gameMode = ""; 
 let currentAudio = null; // 現在再生中の音声を保持
+let activeRecognition = null; // 音声認識を停止するための参照
 
 // 出題されるボールの位置
 const ballPositions = [0, 1, 2, 3, 4, 4.5, 5, 6, 7, 8, 9];
@@ -111,6 +112,10 @@ function stopAllSounds() {
         currentAudio.currentTime = 0;
         currentAudio = null;
     }
+    if (activeRecognition) {
+        activeRecognition.abort();
+        activeRecognition = null;
+    }
     const status = document.getElementById("statusArea");
     if (status && gameMode === "") {
         status.innerText = "音を止めたのだ。モードを選んでね。";
@@ -126,6 +131,7 @@ function goHome() {
     if (game) game.classList.add("hidden");
     if (ranking) ranking.classList.add("hidden");
     if (mode) mode.classList.remove("hidden");
+    setAnswerButtonsVisible(false);
     const status = document.getElementById("statusArea");
     if (status) status.innerText = "タイトルに戻ったのだ。モードを選んでね。";
 }
@@ -134,6 +140,18 @@ function setBackButtonVisible(show) {
     const b = document.getElementById('backButton');
     if (!b) return;
     b.style.display = show ? 'inline-block' : 'none';
+}
+
+function setAnswerButtonsVisible(show) {
+    const buttons = document.getElementById('answerButtons');
+    if (!buttons) return;
+    buttons.classList.toggle('hidden', !show);
+}
+
+function inputAnswer(value) {
+    setAnswerButtonsVisible(false);
+    document.getElementById('currentInput').innerText = String(value).includes('.') ? String(value) : String(value);
+    checkAnswer(value);
 }
 
 function checkSound() {
@@ -189,6 +207,9 @@ function nextQuestion() {
         playSound(randomDoko, () => {
             // 3. マイク起動
             startAnswerListening();
+            setAnswerButtonsVisible(true);
+            const hint = document.getElementById('answerModeHint');
+            if (hint) hint.innerText = '音声かボタンで答えてね！';
         });
     });
 }
@@ -228,12 +249,16 @@ function checkAnswer(playerInput) {
 function startAnswerListening(retryCount = 0) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const status = document.getElementById("statusArea");
+    const hint = document.getElementById('answerModeHint');
     if (!SpeechRecognition) {
-        if (status) status.innerText = "音声認識が利用できません。ブラウザを確認してね。";
+        if (status) status.innerText = "音声認識が利用できません。ボタンで答えてね。";
+        setAnswerButtonsVisible(true);
+        if (hint) hint.innerText = 'ボタンで番号を選択してね！';
         return;
     }
 
     if (status) status.innerText = "どこなのだ？（番号を言ってね）";
+    if (hint) hint.innerText = '音声かボタンで答えてね！';
 
     const doRecognition = () => {
         const recognition = new SpeechRecognition();
@@ -283,10 +308,11 @@ function startAnswerListening(retryCount = 0) {
         };
 
         recognition.onend = () => {
-            // nothing specific here
+            activeRecognition = null;
         };
 
         recognition.start();
+        activeRecognition = recognition;
     };
 
     // Start recognition immediately (beep removed)
@@ -340,6 +366,7 @@ function finishPractice() {
 }
 
 function endGame() {
+    setAnswerButtonsVisible(false);
     document.getElementById("gameArea").classList.add("hidden");
     document.getElementById("rankingArea").classList.remove("hidden");
     document.getElementById("finalScore").innerText = score;

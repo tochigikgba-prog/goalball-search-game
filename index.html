@@ -69,6 +69,24 @@
             background: #222222;
             color: #ffffff;
         }
+        .answer-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px auto 20px;
+            max-width: 440px;
+        }
+        .answer-buttons button {
+            width: 30%;
+            min-width: 90px;
+            min-height: 60px;
+            font-size: 1.2rem;
+            background-color: #555555;
+        }
+        .answer-buttons.hidden {
+            display: none;
+        }
         .btn-back {
             display: none;
             position: fixed;
@@ -92,7 +110,7 @@
 <body>
 
     <h1>ゴールボールサーチゲーム</h1>
-    <div id="statusArea">準備ができたらスタート</div>
+    <div id="statusArea" role="status" aria-live="polite" aria-atomic="true">準備ができたらスタート</div>
     <button id="backButton" class="btn-back" style="display:none" onclick="goHome()" aria-label="もどる">もどる</button>
 
     <div id="modeSelection">
@@ -108,7 +126,20 @@
 
     <div id="gameArea" class="hidden">
         <div id="currentInput">-</div>
-        <p>※音が終わったらマイクに番号を言ってね！</p>
+        <p id="answerModeHint">※どこかを聞かれたらマイクに向かって番号を言ってね！</p>
+        <div id="answerButtons" class="answer-buttons hidden" aria-label="回答ボタン">
+            <button onclick="inputAnswer(0)">0</button>
+            <button onclick="inputAnswer(1)">1</button>
+            <button onclick="inputAnswer(2)">2</button>
+            <button onclick="inputAnswer(3)">3</button>
+            <button onclick="inputAnswer(4)">4</button>
+            <button onclick="inputAnswer(4.5)">4.5</button>
+            <button onclick="inputAnswer(5)">5</button>
+            <button onclick="inputAnswer(6)">6</button>
+            <button onclick="inputAnswer(7)">7</button>
+            <button onclick="inputAnswer(8)">8</button>
+            <button onclick="inputAnswer(9)">9</button>
+        </div>
         <button onclick="stopAllSounds()" class="btn-stop">ゲームを中断して止める</button>
         <button onclick="endGame()" style="background-color:#2196F3;">終了してスコアを保存</button>
     </div>
