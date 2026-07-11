@@ -551,53 +551,51 @@ window.addEventListener('load', () => {
 // ==========================================
 // トップでマイクを先に許可させるための処理
 // ==========================================
+// 指定した音声を再生し、失敗したら本当に次の手段へフォールバックする
+// （playSound()は内部でエラーを握りつぶしてしまうため、ここでは直接Audioを扱う）
+function playGreetingWithFallback() {
+    function tryPlay(src, onFail) {
+        stopAllSounds();
+        currentAudio = new Audio(src);
+        currentAudio.play().catch(err => {
+            console.warn('挨拶音声の再生に失敗:', src, err);
+            currentAudio = null;
+            if (onFail) onFail();
+        });
+    }
+
+    // 1. wavを試す → 2. 失敗したらmp3を試す → 3. それも失敗したら音声合成(TTS)
+    tryPlay('sound/zundamon_greeting_goalball.wav', () => {
+        tryPlay('sound/zundamon_greeting_goalball.mp3', () => {
+            try {
+                const msg = new SpeechSynthesisUtterance('ずんだもんなのだ！　声で合図してくれたら遊べるのだ。まずは「ゴールボール」と言ってみるのだ！');
+                msg.lang = 'ja-JP';
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(msg);
+            } catch (e) {
+                console.warn('TTSフォールバックも失敗', e);
+            }
+        });
+    });
+}
+
 async function handlePreMicClick() {
     const btn = document.getElementById('preMicBtn');
     const status = document.getElementById('statusArea');
     if (btn) btn.disabled = true;
-    if (status) status.innerText = 'まずは挨拶してマイクの許可を確認します...';
-    const ok = await requestMicrophoneAccess();
+    if (status) status.innerText = 'マイクの許可を確認しています...';
+
+    // 重要: マイク許可(getUserMediaのダイアログ待ち)と音声再生を"同時に"開始する。
+    // await で直列に待ってから再生すると、クリックした瞬間の「ユーザー操作」扱いが
+    // 切れてしまい、ブラウザ（特にiPhone Safari）が音声再生をブロックすることがある。
+    const micPromise = requestMicrophoneAccess();
+    playGreetingWithFallback();
+
+    const ok = await micPromise;
     if (ok) {
-        try {
-            // 指定された音源を再生して挨拶する
-            playSound('sound/zundamon_greeting_goalball.wav', () => {
-                localStorage.setItem('micAllowed', '1');
-                if (status) status.innerText = 'マイクの許可が確認できました。モードを選んでね。';
-                if (btn) btn.style.display = 'none';
-            });
-        } catch (e) {
-            console.warn('greeting play error', e);
-            // フォールバック: 同じsoundフォルダの別フォーマットを試す
-            try {
-                playSound('sound/zundamon_greeting_goalball.wav', () => {
-                    localStorage.setItem('micAllowed', '1');
-                    if (status) status.innerText = 'マイクの許可が確認できました。モードを選んでね。';
-                    if (btn) btn.style.display = 'none';
-                });
-            } catch (e2) {
-                console.warn('wav fallback failed', e2);
-                try {
-                    playSound('sound/zundamon_greeting_goalball.mp3', () => {
-                        localStorage.setItem('micAllowed', '1');
-                        if (status) status.innerText = 'マイクの許可が確認できました。モードを選んでね。';
-                        if (btn) btn.style.display = 'none';
-                    });
-                } catch (e3) {
-                    console.warn('mp3 fallback failed', e3);
-                    try {
-                        const msg = new SpeechSynthesisUtterance('ずんだもんなのだ！　声で合図してくれたら遊べるのだ。まずは「ゴールボール」と言ってみるのだ！');
-                        msg.lang = 'ja-JP';
-                        window.speechSynthesis.cancel();
-                        window.speechSynthesis.speak(msg);
-                    } catch (e4) {
-                        console.warn('TTS fallback error', e4);
-                    }
-                    localStorage.setItem('micAllowed', '1');
-                    if (status) status.innerText = 'マイクの許可が確認できました。モードを選んでね。';
-                    if (btn) btn.style.display = 'none';
-                }
-            }
-        }
+        localStorage.setItem('micAllowed', '1');
+        if (status) status.innerText = 'マイクの許可が確認できました。モードを選んでね。';
+        if (btn) btn.style.display = 'none';
     } else {
         if (status) status.innerText = 'マイクの許可が確認できませんでした。ボタンでも遊べます。';
         if (btn) btn.disabled = false;
