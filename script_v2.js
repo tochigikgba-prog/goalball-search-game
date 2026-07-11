@@ -1,6 +1,21 @@
 // ==========================================
 // 1. 初期設定・変数
 // ==========================================
+// グローバルエラー表示（デバッグ用）
+window.addEventListener('error', (ev) => {
+    try {
+        const status = document.getElementById('statusArea');
+        if (status) status.innerText = 'エラー発生: ' + (ev.message || ev.error || 'unknown');
+    } catch (e) { /* ignore */ }
+    console.error('Unhandled error', ev);
+});
+window.addEventListener('unhandledrejection', (ev) => {
+    try {
+        const status = document.getElementById('statusArea');
+        if (status) status.innerText = 'エラー(Promise): ' + (ev.reason && ev.reason.message ? ev.reason.message : String(ev.reason));
+    } catch (e) { /* ignore */ }
+    console.error('Unhandled rejection', ev);
+});
 let score = 0;
 let practiceCount = 0;   
 let practiceCorrect = 0; 
@@ -599,7 +614,7 @@ window.addEventListener('load', () => {
         const pre = document.getElementById('preMicBtn');
         if (pre) {
             // add touchstart to improve responsiveness on some iOS devices
-            try { pre.addEventListener('touchstart', (ev) => { ev.preventDefault(); handlePreMicClick(); }, {passive:false}); } catch(e) { /* ignore */ }
+            try { pre.addEventListener('touchstart', () => { handlePreMicClick(); }); } catch(e) { /* ignore */ }
             // only add click listener if there's no inline onclick to avoid double-calls
             if (!pre.getAttribute('onclick')) {
                 pre.addEventListener('click', handlePreMicClick);
