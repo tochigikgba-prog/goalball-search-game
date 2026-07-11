@@ -423,6 +423,74 @@ function endGame() {
     document.getElementById("scoreSubmitArea").style.display = "block";
     loadRanking();
     startRankingRealtime();
+    // ボタンを押さなくても、ずんだもんが呼びかけてそのまま名前を聞き取る
+    announceNamePromptAndListen();
+}
+
+// スコア確定時に「名前を言うのだ」と呼びかけ、終わったら自動でマイクを起動する
+function announceNamePromptAndListen() {
+    function startListening() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const nameInput = document.getElementById('nameInput');
+        if (!SpeechRecognition || !nameInput) return; // 非対応環境ではボタンからの手入力のみ
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'ja-JP';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 3;
+
+        recognition.onresult = (event) => {
+            const t = event.results[0][0].transcript || '';
+            if (/もどる|戻る/.test(t.replace(/\s+/g, ''))) {
+                goHome();
+                return;
+            }
+            nameInput.value = t;
+        };
+        recognition.onerror = (e) => {
+            console.warn('名前の音声認識エラー', e);
+        };
+        recognition.onend = () => {
+            if (activeRecognition === recognition) activeRecognition = null;
+        };
+
+        try {
+            recognition.start();
+            activeRecognition = recognition;
+        } catch (e) {
+            console.warn('名前の音声認識開始エラー', e);
+        }
+    }
+
+    function tryPlay(src, onFail) {
+        stopAllSounds();
+        currentAudio = new Audio(src);
+        currentAudio.play().then(() => {
+            currentAudio.onended = () => {
+                currentAudio = null;
+                startListening();
+            };
+        }).catch(err => {
+            console.warn('名前プロンプト音声の再生に失敗:', src, err);
+            currentAudio = null;
+            if (onFail) onFail();
+        });
+    }
+
+    // 1. 録音済みの呼びかけ音声を試す → 2. 無ければ音声合成(TTS)で代用
+    tryPlay('sound/name_prompt.wav', () => {
+        try {
+            const msg = new SpeechSynthesisUtterance('スコアを残すからコートネームを言うのだ！');
+            msg.lang = 'ja-JP';
+            msg.onend = startListening;
+            msg.onerror = startListening;
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(msg);
+        } catch (e) {
+            console.warn('名前プロンプトのTTSも失敗', e);
+            startListening(); // 呼びかけ音声が全滅してもマイクだけは起動する
+        }
+    });
 }
 
 async function submitScore() {
