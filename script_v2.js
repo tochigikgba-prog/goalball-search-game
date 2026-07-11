@@ -553,11 +553,17 @@ window.addEventListener('load', () => {
 // ==========================================
 // 指定した音声を再生し、失敗したら本当に次の手段へフォールバックする
 // （playSound()は内部でエラーを握りつぶしてしまうため、ここでは直接Audioを扱う）
-function playGreetingWithFallback() {
+// onDone: 再生が最後まで終わった（または全フォールバックが尽きた）時に呼ばれる
+function playGreetingWithFallback(onDone) {
     function tryPlay(src, onFail) {
         stopAllSounds();
         currentAudio = new Audio(src);
-        currentAudio.play().catch(err => {
+        currentAudio.play().then(() => {
+            currentAudio.onended = () => {
+                currentAudio = null;
+                if (onDone) onDone();
+            };
+        }).catch(err => {
             console.warn('挨拶音声の再生に失敗:', src, err);
             currentAudio = null;
             if (onFail) onFail();
@@ -570,13 +576,95 @@ function playGreetingWithFallback() {
             try {
                 const msg = new SpeechSynthesisUtterance('ずんだもんなのだ！　声で合図してくれたら遊べるのだ。まずは「ゴールボール」と言ってみるのだ！');
                 msg.lang = 'ja-JP';
+                msg.onend = () => { if (onDone) onDone(); };
+                msg.onerror = () => { if (onDone) onDone(); };
                 window.speechSynthesis.cancel();
                 window.speechSynthesis.speak(msg);
             } catch (e) {
                 console.warn('TTSフォールバックも失敗', e);
+                if (onDone) onDone();
             }
         });
     });
+}
+
+// 挨拶の後、実際に「ゴールボール」と言ってもらえるか確認する
+// 認識できてもできなくても、最終的には必ずセットアップを完了させる（詰まらせない）
+function listenForGreetingConfirmation() {
+    const status = document.getElementById('statusArea');
+    const btn = document.getElementById('preMicBtn');
+
+    function finishSetup() {
+        localStorage.setItem('micAllowed', '1');
+        if (status) status.innerText = 'マイクの許可が確認できました。モードを選んでね。';
+        if (btn) btn.style.display = 'none';
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        // この端末では音声認識自体が使えないので、確認はスキップしてそのまま完了
+        finishSetup();
+        return;
+    }
+
+    if (status) status.innerText = '「ゴールボール」と言ってみてね！';
+
+    let handled = false;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'ja-JP';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 5;
+
+    const timeoutId = setTimeout(() => {
+        if (handled) return;
+        handled = true;
+        try { recognition.abort(); } catch (e) { /* ignore */ }
+        playSound('sound/standby_ng.wav', finishSetup);
+    }, 6000); // 6秒待っても発話が確認できなければNG扱い
+
+    recognition.onresult = (event) => {
+        if (handled) return;
+        handled = true;
+        clearTimeout(timeoutId);
+        const results = event.results[0];
+        let matched = false;
+        for (let i = 0; i < results.length; i++) {
+            const t = (results[i].transcript || '').replace(/\s+/g, '');
+            if (/ゴールボール|ごうるぼうる|ごーるぼーる/.test(t)) {
+                matched = true;
+                break;
+            }
+        }
+        playSound(matched ? 'sound/standby_ok.wav' : 'sound/standby_ng.wav', finishSetup);
+    };
+
+    recognition.onerror = (e) => {
+        if (handled) return;
+        handled = true;
+        clearTimeout(timeoutId);
+        console.warn('greeting recognition error', e);
+        playSound('sound/standby_ng.wav', finishSetup);
+    };
+
+    recognition.onend = () => {
+        // 何も検出されないまま終了した場合の保険
+        if (!handled) {
+            handled = true;
+            clearTimeout(timeoutId);
+            playSound('sound/standby_ng.wav', finishSetup);
+        }
+    };
+
+    try {
+        recognition.start();
+    } catch (e) {
+        console.warn('recognition start error', e);
+        if (!handled) {
+            handled = true;
+            clearTimeout(timeoutId);
+            finishSetup();
+        }
+    }
 }
 
 async function handlePreMicClick() {
@@ -589,13 +677,16 @@ async function handlePreMicClick() {
     // await で直列に待ってから再生すると、クリックした瞬間の「ユーザー操作」扱いが
     // 切れてしまい、ブラウザ（特にiPhone Safari）が音声再生をブロックすることがある。
     const micPromise = requestMicrophoneAccess();
-    playGreetingWithFallback();
+    const audioDonePromise = new Promise((resolve) => {
+        playGreetingWithFallback(resolve);
+    });
 
-    const ok = await micPromise;
+    // マイク許可の結果と、挨拶音声の再生完了の両方を待ってから次に進む
+    const [ok] = await Promise.all([micPromise, audioDonePromise]);
+
     if (ok) {
-        localStorage.setItem('micAllowed', '1');
-        if (status) status.innerText = 'マイクの許可が確認できました。モードを選んでね。';
-        if (btn) btn.style.display = 'none';
+        // マイクが許可できていれば、実際に「ゴールボール」と言ってもらって確認する
+        listenForGreetingConfirmation();
     } else {
         if (status) status.innerText = 'マイクの許可が確認できませんでした。ボタンでも遊べます。';
         if (btn) btn.disabled = false;
