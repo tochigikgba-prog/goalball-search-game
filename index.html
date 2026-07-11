@@ -112,7 +112,7 @@
     <h1>ゴールボールサーチゲーム</h1>
     <div id="statusArea" role="status" aria-live="polite" aria-atomic="true">準備ができたらスタート</div>
     <!-- マイク許可をユーザー操作で促すボタン（iPhone向け） -->
-    <button id="preMicBtn" style="background-color:#ffb300; color:#000;" aria-label="マイクを許可する">最初に挨拶してマイクを許可する</button>
+    <button id="preMicBtn" type="button" onclick="handlePreMicClick()" style="background-color:#ffb300; color:#000; z-index:1000; pointer-events:auto;" aria-label="マイクを許可する">最初にマイクを許可しよう</button>
     <button id="backButton" class="btn-back" style="display:none" onclick="goHome()" aria-label="もどる">もどる</button>
 
     <div id="modeSelection">
@@ -166,5 +166,11 @@
     </div>
 
     <script src="script_v2.js"></script>
+    <footer style="margin-top:30px; padding:20px 0; color:#bbb; font-size:0.9rem; text-align:center;">
+        <div style="max-width:900px; margin:0 auto;">
+            <div>Thanks；<a href="https://goalball-kanagawa.org/" target="_blank" rel="noopener" style="color:#fff; text-decoration:underline;">KGBA</a>　｜　ずんだもん/VOICEVOX</div>
+            <div style="margin-top:6px;">(C) 2026 コドモガジェット All Rights Reserved</div>
+        </div>
+    </footer>
 </body>
 </html>

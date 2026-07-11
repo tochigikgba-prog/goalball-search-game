@@ -598,7 +598,12 @@ window.addEventListener('load', () => {
     try {
         const pre = document.getElementById('preMicBtn');
         if (pre) {
-            pre.addEventListener('click', handlePreMicClick);
+            // add touchstart to improve responsiveness on some iOS devices
+            try { pre.addEventListener('touchstart', (ev) => { ev.preventDefault(); handlePreMicClick(); }, {passive:false}); } catch(e) { /* ignore */ }
+            // only add click listener if there's no inline onclick to avoid double-calls
+            if (!pre.getAttribute('onclick')) {
+                pre.addEventListener('click', handlePreMicClick);
+            }
             const allowed = localStorage.getItem('micAllowed');
             if (allowed === '1') {
                 pre.style.display = 'none';
