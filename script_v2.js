@@ -57,34 +57,30 @@ function normalizeJapaneseNums(s) {
     };
     Object.keys(kanaMap).sort((a,b)=>b.length-a.length).forEach(k => {
         out = out.replace(new RegExp(k,'g'), kanaMap[k]);
-    if (ok) {
-        try {
-            // 指定された挨拶音声を再生し、続けて成功音を鳴らす
-            playSound('sound/zundamon_greeting_goalball.wav', () => {
-                playSound('sound/standby_ok.wav', () => {
-                    localStorage.setItem('micAllowed', '1');
-                    if (status) status.innerText = 'マイクの許可が確認できました。モードを選んでね。';
-                    if (btn) btn.style.display = 'none';
-                });
-            });
-        } catch (e) {
-            console.warn('greeting play error', e);
-            // 挨拶再生に失敗したらエラーメッセージ音を再生して完了扱いにする
-            try {
-                playSound('sound/standby_ng.wav', () => {
-                    localStorage.setItem('micAllowed', '1');
-                    if (status) status.innerText = 'マイクの許可が確認できました。モードを選んでね。';
-                    if (btn) btn.style.display = 'none';
-                });
-            } catch (e2) {
-                console.warn('standby_ng play error', e2);
-                // 最終フォールバック：UIのみ更新
-                localStorage.setItem('micAllowed', '1');
-                if (status) status.innerText = 'マイクの許可が確認できました。モードを選んでね。';
-                if (btn) btn.style.display = 'none';
-            }
+    });
+    return out;
+}
+
+function parseSpokenNumber(transcript) {
+    if (!transcript) return null;
+    let normalized = transcript.replace(/\s+/g, '');
+    normalized = normalizeJapaneseNums(normalized);
+    normalized = normalized.replace(/[点てんテン]/g, '.');
+    let cleaned = normalized.replace(/[^0-9.]/g, '');
+    let num = parseFloat(cleaned);
+    if ((isNaN(num) || Number.isInteger(num)) && currentCorrectAnswer != null) {
+        const expectedFileId = fileIdFor(currentCorrectAnswer);
+        const onlyDigits = cleaned.replace(/\./g, '');
+        if (onlyDigits === expectedFileId) {
+            return currentCorrectAnswer;
         }
-    } else {
+    }
+    return isNaN(num) ? null : num;
+}
+
+// Firebaseの初期化
+const firebaseConfig = {
+    apiKey: "AIzaSyDwBUd2D1Mt8HlZbh9Mvpi95JP6P0F7S7E",
     authDomain: "gsranking.firebaseapp.com",
     projectId: "gsranking",
     storageBucket: "gsranking.firebasestorage.app",
