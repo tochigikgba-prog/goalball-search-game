@@ -111,6 +111,8 @@
 
     <h1>ゴールボールサーチゲーム</h1>
     <div id="statusArea" role="status" aria-live="polite" aria-atomic="true">準備ができたらスタート</div>
+    <!-- マイク許可をユーザー操作で促すボタン（iPhone向け） -->
+    <button id="preMicBtn" style="background-color:#ffb300; color:#000;" aria-label="マイクを許可する">最初に挨拶してマイクを許可する</button>
     <button id="backButton" class="btn-back" style="display:none" onclick="goHome()" aria-label="もどる">もどる</button>
 
     <div id="modeSelection">
@@ -154,9 +156,13 @@
             <button onclick="submitScore()" style="background-color: #2196F3;">スコアを送信する</button>
         </div>
 
+        <div id="rankingStatus" role="status" aria-live="polite" style="margin-bottom:10px; min-height:1.2em;">ランキングを読み込んでいません</div>
         <div id="rankingList" style="text-align: left; margin: 20px 0;">
-            </div>
-        <button onclick="location.reload()" style="background-color: #9e9e9e;">タイトルに戻る</button>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+            <button onclick="loadRanking()" style="background-color:#4caf50;">ランキングを更新</button>
+            <button onclick="location.reload()" style="background-color: #9e9e9e;">タイトルに戻る</button>
+        </div>
     </div>
 
     <script src="script_v2.js"></script>

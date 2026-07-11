@@ -8,6 +8,7 @@ let currentCorrectAnswer = null;
 let gameMode = ""; 
 let currentAudio = null; // 現在再生中の音声を保持
 let activeRecognition = null; // 音声認識を停止するための参照
+let rankingsUnsub = null; // リアルタイム購読の解除関数
 
 // 出題されるボールの位置
 const ballPositions = [0, 1, 2, 3, 4, 4.5, 5, 6, 7, 8, 9];
@@ -41,30 +42,34 @@ function normalizeJapaneseNums(s) {
     };
     Object.keys(kanaMap).sort((a,b)=>b.length-a.length).forEach(k => {
         out = out.replace(new RegExp(k,'g'), kanaMap[k]);
-    });
-    return out;
-}
-
-function parseSpokenNumber(transcript) {
-    if (!transcript) return null;
-    let normalized = transcript.replace(/\s+/g, '');
-    normalized = normalizeJapaneseNums(normalized);
-    normalized = normalized.replace(/[点てんテン]/g, '.');
-    let cleaned = normalized.replace(/[^0-9.]/g, '');
-    let num = parseFloat(cleaned);
-    if ((isNaN(num) || Number.isInteger(num)) && currentCorrectAnswer != null) {
-        const expectedFileId = fileIdFor(currentCorrectAnswer);
-        const onlyDigits = cleaned.replace(/\./g, '');
-        if (onlyDigits === expectedFileId) {
-            return currentCorrectAnswer;
+    if (ok) {
+        try {
+            // 指定された挨拶音声を再生し、続けて成功音を鳴らす
+            playSound('sound/zundamon_greeting_goalball.wav', () => {
+                playSound('sound/standby_ok.wav', () => {
+                    localStorage.setItem('micAllowed', '1');
+                    if (status) status.innerText = 'マイクの許可が確認できました。モードを選んでね。';
+                    if (btn) btn.style.display = 'none';
+                });
+            });
+        } catch (e) {
+            console.warn('greeting play error', e);
+            // 挨拶再生に失敗したらエラーメッセージ音を再生して完了扱いにする
+            try {
+                playSound('sound/standby_ng.wav', () => {
+                    localStorage.setItem('micAllowed', '1');
+                    if (status) status.innerText = 'マイクの許可が確認できました。モードを選んでね。';
+                    if (btn) btn.style.display = 'none';
+                });
+            } catch (e2) {
+                console.warn('standby_ng play error', e2);
+                // 最終フォールバック：UIのみ更新
+                localStorage.setItem('micAllowed', '1');
+                if (status) status.innerText = 'マイクの許可が確認できました。モードを選んでね。';
+                if (btn) btn.style.display = 'none';
+            }
         }
-    }
-    return isNaN(num) ? null : num;
-}
-
-// Firebaseの初期化
-const firebaseConfig = {
-    apiKey: "AIzaSyDwBUd2D1Mt8HlZbh9Mvpi95JP6P0F7S7E",
+    } else {
     authDomain: "gsranking.firebaseapp.com",
     projectId: "gsranking",
     storageBucket: "gsranking.firebasestorage.app",
@@ -132,6 +137,7 @@ function goHome() {
     if (ranking) ranking.classList.add("hidden");
     if (mode) mode.classList.remove("hidden");
     setAnswerButtonsVisible(false);
+    stopRankingRealtime();
     const status = document.getElementById("statusArea");
     if (status) status.innerText = "タイトルに戻ったのだ。モードを選んでね。";
 }
@@ -246,7 +252,27 @@ function checkAnswer(playerInput) {
 // 5. 音声入力処理
 // ==========================================
 
-function startAnswerListening(retryCount = 0) {
+async function requestMicrophoneAccess() {
+    const status = document.getElementById("statusArea");
+    const hint = document.getElementById('answerModeHint');
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        return true;
+    }
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+        return true;
+    } catch (err) {
+        console.warn('Microphone permission denied', err);
+        if (status) status.innerText = "マイクの許可が必要です。ブラウザの設定で許可するか、ボタンで答えてね。";
+        setAnswerButtonsVisible(true);
+        if (hint) hint.innerText = 'マイクを許可できない場合、ボタンで答えてね。';
+        return false;
+    }
+}
+
+async function startAnswerListening(retryCount = 0) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const status = document.getElementById("statusArea");
     const hint = document.getElementById('answerModeHint');
@@ -259,6 +285,11 @@ function startAnswerListening(retryCount = 0) {
 
     if (status) status.innerText = "どこなのだ？（番号を言ってね）";
     if (hint) hint.innerText = '音声かボタンで答えてね！';
+
+    const permissionGranted = await requestMicrophoneAccess();
+    if (!permissionGranted) {
+        return;
+    }
 
     const doRecognition = () => {
         const recognition = new SpeechRecognition();
@@ -302,10 +333,13 @@ function startAnswerListening(retryCount = 0) {
 
         recognition.onerror = (e) => {
             console.error('Recognition error', e);
-            if (retryCount < 2) {
+            const blocked = e.error === 'not-allowed' || e.error === 'denied' || e.error === 'not-allowed';
+            if (retryCount < 2 && !blocked) {
                 setTimeout(() => startAnswerListening(retryCount + 1), 700);
             } else {
-                if (status) status.innerText = "認識エラーが発生したのだ。ボタンで回答するか、マイク設定を確認してね。";
+                if (status) status.innerText = blocked
+                    ? "マイクの許可が必要です。ブラウザの設定で許可するか、ボタンで答えてね。"
+                    : "認識エラーが発生したのだ。ボタンで回答するか、マイク設定を確認してね。";
                 setAnswerButtonsVisible(true);
                 if (hint) hint.innerText = 'ボタンで番号を選択してね！';
             }
@@ -377,6 +411,7 @@ function endGame() {
     // 常にスコア送信エリアを表示（選手権モードでも保存できるように）
     document.getElementById("scoreSubmitArea").style.display = "block";
     loadRanking();
+    startRankingRealtime();
 }
 
 async function submitScore() {
@@ -402,13 +437,75 @@ async function submitScore() {
 }
 
 async function loadRanking() {
-    const snapshot = await db.collection("rankings").orderBy("score", "desc").limit(10).get();
-    let html = "<h3>TOP 10</h3>";
-    snapshot.forEach(doc => {
-        const data = doc.data();
-        html += `<p>${data.name}: ${data.score}点</p>`;
-    });
-    document.getElementById("rankingList").innerHTML = html;
+    const statusEl = document.getElementById('rankingStatus');
+    const listEl = document.getElementById('rankingList');
+    if (statusEl) statusEl.innerText = 'ランキングを読み込んでいます...';
+    if (listEl) listEl.innerHTML = '';
+    try {
+        const snapshot = await db.collection("rankings").orderBy("score", "desc").limit(10).get();
+        if (!snapshot || snapshot.empty) {
+            if (statusEl) statusEl.innerText = 'ランキングはまだ記録がありません。';
+            return;
+        }
+        let html = '<h3 style="text-align:center;">TOP 10</h3>';
+        let rank = 1;
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const name = data.name || 'ななし';
+            const points = (data.score !== undefined && data.score !== null) ? data.score : '-';
+            const time = data.timestamp && data.timestamp.toDate ? data.timestamp.toDate().toLocaleString() : '';
+            html += `<div style="padding:8px 6px; border-bottom:1px solid #222; display:flex; justify-content:space-between; align-items:center;"><div><strong>${rank}. ${name}</strong><div style='font-size:0.9rem; color:#bbb;'>${time}</div></div><div style="font-size:1.2rem;">${points}点</div></div>`;
+            rank++;
+        });
+        if (listEl) listEl.innerHTML = html;
+        if (statusEl) statusEl.innerText = `読み込み完了: 上位 ${rank-1} 件を表示`; 
+    } catch (err) {
+        console.error('loadRanking error', err);
+        if (statusEl) statusEl.innerText = `ランキングの取得に失敗しました: ${err.message || err}`;
+        if (listEl) listEl.innerHTML = '';
+    }
+}
+
+// ==========================================
+// リアルタイム購読（onSnapshot）
+// ==========================================
+function startRankingRealtime() {
+    if (rankingsUnsub) return; // 既に購読中
+    const statusEl = document.getElementById('rankingStatus');
+    const listEl = document.getElementById('rankingList');
+    if (statusEl) statusEl.innerText = 'ランキングをリアルタイムで購読中...';
+    rankingsUnsub = db.collection('rankings').orderBy('score','desc').limit(10)
+        .onSnapshot(snapshot => {
+            if (!snapshot || snapshot.empty) {
+                if (statusEl) statusEl.innerText = 'ランキングはまだ記録がありません。';
+                if (listEl) listEl.innerHTML = '';
+                return;
+            }
+            let html = '<h3 style="text-align:center;">TOP 10</h3>';
+            let rank = 1;
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const name = data.name || 'ななし';
+                const points = (data.score !== undefined && data.score !== null) ? data.score : '-';
+                const time = data.timestamp && data.timestamp.toDate ? data.timestamp.toDate().toLocaleString() : '';
+                html += `<div style="padding:8px 6px; border-bottom:1px solid #222; display:flex; justify-content:space-between; align-items:center;"><div><strong>${rank}. ${name}</strong><div style='font-size:0.9rem; color:#bbb;'>${time}</div></div><div style="font-size:1.2rem;">${points}点</div></div>`;
+                rank++;
+            });
+            if (listEl) listEl.innerHTML = html;
+            if (statusEl) statusEl.innerText = `リアルタイム更新: 上位 ${rank-1} 件`;
+        }, err => {
+            console.error('onSnapshot error', err);
+            if (statusEl) statusEl.innerText = `リアルタイム購読エラー: ${err.message || err}`;
+        });
+}
+
+function stopRankingRealtime() {
+    if (rankingsUnsub) {
+        try { rankingsUnsub(); } catch (e) { console.warn('ランキング購読解除エラー', e); }
+        rankingsUnsub = null;
+    }
+    const statusEl = document.getElementById('rankingStatus');
+    if (statusEl) statusEl.innerText = 'ランキング購読停止';
 }
 
 // Firestore接続テスト
@@ -438,4 +535,76 @@ function testFirestoreConnection() {
 window.addEventListener('load', () => {
     setupGlobalControls();
     testFirestoreConnection();
+});
+
+// ==========================================
+// トップでマイクを先に許可させるための処理
+// ==========================================
+async function handlePreMicClick() {
+    const btn = document.getElementById('preMicBtn');
+    const status = document.getElementById('statusArea');
+    if (btn) btn.disabled = true;
+    if (status) status.innerText = 'まずは挨拶してマイクの許可を確認します...';
+    const ok = await requestMicrophoneAccess();
+    if (ok) {
+        try {
+            // 指定された音源を再生して挨拶する
+            playSound('sound/zundamon_greeting_goalball.wav', () => {
+                localStorage.setItem('micAllowed', '1');
+                if (status) status.innerText = 'マイクの許可が確認できました。モードを選んでね。';
+                if (btn) btn.style.display = 'none';
+            });
+        } catch (e) {
+            console.warn('greeting play error', e);
+            // フォールバック: 同じsoundフォルダの別フォーマットを試す
+            try {
+                playSound('sound/zundamon_greeting_goalball.wav', () => {
+                    localStorage.setItem('micAllowed', '1');
+                    if (status) status.innerText = 'マイクの許可が確認できました。モードを選んでね。';
+                    if (btn) btn.style.display = 'none';
+                });
+            } catch (e2) {
+                console.warn('wav fallback failed', e2);
+                try {
+                    playSound('sound/zundamon_greeting_goalball.mp3', () => {
+                        localStorage.setItem('micAllowed', '1');
+                        if (status) status.innerText = 'マイクの許可が確認できました。モードを選んでね。';
+                        if (btn) btn.style.display = 'none';
+                    });
+                } catch (e3) {
+                    console.warn('mp3 fallback failed', e3);
+                    try {
+                        const msg = new SpeechSynthesisUtterance('ずんだもんなのだ！　声で合図してくれたら遊べるのだ。まずは「ゴールボール」と言ってみるのだ！');
+                        msg.lang = 'ja-JP';
+                        window.speechSynthesis.cancel();
+                        window.speechSynthesis.speak(msg);
+                    } catch (e4) {
+                        console.warn('TTS fallback error', e4);
+                    }
+                    localStorage.setItem('micAllowed', '1');
+                    if (status) status.innerText = 'マイクの許可が確認できました。モードを選んでね。';
+                    if (btn) btn.style.display = 'none';
+                }
+            }
+        }
+    } else {
+        if (status) status.innerText = 'マイクの許可が確認できませんでした。ボタンでも遊べます。';
+        if (btn) btn.disabled = false;
+    }
+}
+
+// 初期化：ボタンにリスナーを付け、既に許可済なら非表示にする
+window.addEventListener('load', () => {
+    try {
+        const pre = document.getElementById('preMicBtn');
+        if (pre) {
+            pre.addEventListener('click', handlePreMicClick);
+            const allowed = localStorage.getItem('micAllowed');
+            if (allowed === '1') {
+                pre.style.display = 'none';
+            }
+        }
+    } catch (e) {
+        console.warn('preMic init error', e);
+    }
 });
