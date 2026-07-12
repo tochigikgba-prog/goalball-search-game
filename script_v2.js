@@ -503,13 +503,32 @@ function endGame() {
 
 // スコア確定時に「名前を言うのだ」と呼びかけ、終わったら自動でマイクを起動する
 function announceNamePromptAndListen() {
+    // 「送信、と言うと送れるのだ！」と音声で案内してから、送信コマンドの聞き取りを始める
+    function announceSubmitPromptThenListen() {
+        const rankingStatus = document.getElementById('rankingStatus');
+        if (rankingStatus) rankingStatus.innerText = '「送信」と言うとスコアを送れるのだ！';
+
+        if (typeof window.speechSynthesis === 'undefined') {
+            listenForSubmitCommand();
+            return;
+        }
+        try {
+            const msg = new SpeechSynthesisUtterance('送信、と言うと送れるのだ！');
+            msg.lang = 'ja-JP';
+            msg.onend = () => listenForSubmitCommand();
+            msg.onerror = () => listenForSubmitCommand();
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(msg);
+        } catch (e) {
+            console.warn('送信案内のTTSに失敗', e);
+            listenForSubmitCommand();
+        }
+    }
+
     // 名前を聞き取った後、続けて「送信」と言うのを待つ
     function listenForSubmitCommand() {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const rankingStatus = document.getElementById('rankingStatus');
         if (!SpeechRecognition) return;
-
-        if (rankingStatus) rankingStatus.innerText = '「送信」と言うとスコアを送れるのだ！';
 
         const recognition = new SpeechRecognition();
         recognition.lang = 'ja-JP';
@@ -561,8 +580,10 @@ function announceNamePromptAndListen() {
                 return;
             }
             nameInput.value = t;
-            // 名前を聞き取ったら、続けて「送信」の発話を待つ
-            listenForSubmitCommand();
+            // 名前を聞き取ったら、1秒待ってから「送信と言ってね」と音声案内し、聞き取りを開始する
+            setTimeout(() => {
+                announceSubmitPromptThenListen();
+            }, 1000);
         };
         recognition.onerror = (e) => {
             console.warn('名前の音声認識エラー', e);
