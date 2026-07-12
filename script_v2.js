@@ -181,6 +181,51 @@ function checkSound() {
     });
 }
 
+let backHintAnnounced = false; // 「もどる」の案内をこのセッションで既に話したか
+
+// 「もどる」と言えば戻れることを、最初の一回だけ音声で案内する
+// 1. 録音済みのreturn.wavを再生 → 2. 失敗したらTTSで代用
+function announceBackHintOnce(callback) {
+    if (backHintAnnounced) {
+        console.log('[戻る案内] 既にこのセッションで案内済みのためスキップ');
+        callback();
+        return;
+    }
+    backHintAnnounced = true;
+    console.log('[戻る案内] sound/return.wav の再生を試みます');
+
+    stopAllSounds();
+    currentAudio = new Audio('sound/return.wav');
+    currentAudio.play().then(() => {
+        console.log('[戻る案内] return.wav 再生開始に成功');
+        currentAudio.onended = () => {
+            console.log('[戻る案内] return.wav 再生終了');
+            currentAudio = null;
+            lastAudioEndedAt = Date.now();
+            callback();
+        };
+    }).catch(err => {
+        console.warn('[戻る案内] return.wav の再生に失敗、TTSにフォールバックします:', err);
+        currentAudio = null;
+        if (typeof window.speechSynthesis === 'undefined') {
+            console.warn('[戻る案内] このブラウザは音声合成(speechSynthesis)に非対応です');
+            callback();
+            return;
+        }
+        try {
+            const msg = new SpeechSynthesisUtterance('困ったときは、いつでも「もどる」と言うと戻れるのだ！');
+            msg.lang = 'ja-JP';
+            msg.onend = callback;
+            msg.onerror = (e) => { console.warn('[戻る案内] TTSのonerror', e); callback(); };
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(msg);
+        } catch (e) {
+            console.warn('[戻る案内] TTSも失敗', e);
+            callback();
+        }
+    });
+}
+
 function startPractice() {
     gameMode = "practice";
     score = 0;
@@ -189,7 +234,7 @@ function startPractice() {
     document.getElementById("modeSelection").classList.add("hidden");
     document.getElementById("gameArea").classList.remove("hidden");
     setBackButtonVisible(true);
-    nextQuestion();
+    announceBackHintOnce(() => nextQuestion());
 }
 
 function startChampionship() {
@@ -198,8 +243,10 @@ function startChampionship() {
     document.getElementById("modeSelection").classList.add("hidden");
     document.getElementById("gameArea").classList.remove("hidden");
     setBackButtonVisible(true);
-    playSound("sound/start_pro.mp3", () => {
-        nextQuestion();
+    announceBackHintOnce(() => {
+        playSound("sound/start_pro.mp3", () => {
+            nextQuestion();
+        });
     });
 }
 
@@ -430,8 +477,8 @@ function playSound(file, callback) {
 }
 
 function finishPractice() {
-    document.getElementById("statusArea").innerText = `練習終了！5問中 ${practiceCorrect}問 正解なのだ！`;
-    playSound("sound/otsukare.mp3", () => {
+    document.getElementById("statusArea").innerText = "練習終了！お疲れ様なのだ！";
+    playSound("sound/training_otsukare.wav", () => {
         setTimeout(() => { location.reload(); }, 4000);
     });
 }
@@ -451,6 +498,47 @@ function endGame() {
 
 // スコア確定時に「名前を言うのだ」と呼びかけ、終わったら自動でマイクを起動する
 function announceNamePromptAndListen() {
+    // 名前を聞き取った後、続けて「送信」と言うのを待つ
+    function listenForSubmitCommand() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const rankingStatus = document.getElementById('rankingStatus');
+        if (!SpeechRecognition) return;
+
+        if (rankingStatus) rankingStatus.innerText = '「送信」と言うとスコアを送れるのだ！';
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'ja-JP';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 3;
+
+        recognition.onresult = (event) => {
+            const t = (event.results[0][0].transcript || '').replace(/\s+/g, '');
+            if (/もどる|戻る/.test(t)) {
+                goHome();
+                return;
+            }
+            if (/送信|そうしん/.test(t)) {
+                submitScore();
+                return;
+            }
+            // 「送信」でも「もどる」でもなければ、もう一度「送信」待ちに戻る
+            listenForSubmitCommand();
+        };
+        recognition.onerror = (e) => {
+            console.warn('送信コマンドの音声認識エラー', e);
+        };
+        recognition.onend = () => {
+            if (activeRecognition === recognition) activeRecognition = null;
+        };
+
+        try {
+            recognition.start();
+            activeRecognition = recognition;
+        } catch (e) {
+            console.warn('送信コマンドの音声認識開始エラー', e);
+        }
+    }
+
     function startListening() {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const nameInput = document.getElementById('nameInput');
@@ -468,6 +556,8 @@ function announceNamePromptAndListen() {
                 return;
             }
             nameInput.value = t;
+            // 名前を聞き取ったら、続けて「送信」の発話を待つ
+            listenForSubmitCommand();
         };
         recognition.onerror = (e) => {
             console.warn('名前の音声認識エラー', e);
