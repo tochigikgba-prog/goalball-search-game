@@ -24,6 +24,8 @@ let gameMode = "";
 let currentAudio = null; // 現在再生中の音声を保持
 let activeRecognition = null; // 音声認識を停止するための参照
 let rankingsUnsub = null; // リアルタイム購読の解除関数
+let lastAudioEndedAt = 0; // 直前の音声再生が終わった時刻（エコー誤認識対策）
+const ECHO_GUARD_MS = 500; // 音声終了直後、この時間内の認識結果は誤認識とみなして無視する
 
 // 出題されるボールの位置
 const ballPositions = [0, 1, 2, 3, 4, 4.5, 5, 6, 7, 8, 9];
@@ -211,6 +213,9 @@ function nextQuestion() {
         return;
     }
 
+    // 前の問題のマイクが万一残っていた場合に備え、念のため確実に止めておく
+    stopAllSounds();
+
     const randomIndex = Math.floor(Math.random() * ballPositions.length);
     currentCorrectAnswer = ballPositions[randomIndex];
     
@@ -309,7 +314,18 @@ async function startAnswerListening(retryCount = 0) {
         recognition.maxAlternatives = 5;
 
         let handled = false;
+
+        // 直前の音声（説明・正解/不正解の声）のスピーカー音をマイクが拾って
+        // 誤認識してしまう「音声フィードバック」を防ぐためのガード
+        const isEchoWindow = () => {
+            return currentAudio !== null || (Date.now() - lastAudioEndedAt) < ECHO_GUARD_MS;
+        };
+
         recognition.onresult = (event) => {
+            if (isEchoWindow()) {
+                console.warn('エコーの可能性があるため認識結果を無視しました');
+                return;
+            }
             const results = event.results[0];
             for (let i = 0; i < results.length; i++) {
                 const alt = results[i].transcript || '';
@@ -344,6 +360,7 @@ async function startAnswerListening(retryCount = 0) {
 
         recognition.onerror = (e) => {
             console.error('Recognition error', e);
+            if (currentAudio) return; // 既に次の音声が始まっている＝別の場面に進んでいるので何もしない
             const blocked = e.error === 'not-allowed' || e.error === 'denied' || e.error === 'not-allowed';
             if (retryCount < 2 && !blocked) {
                 setTimeout(() => startAnswerListening(retryCount + 1), 700);
@@ -360,11 +377,15 @@ async function startAnswerListening(retryCount = 0) {
             activeRecognition = null;
         };
 
-        recognition.start();
-        activeRecognition = recognition;
+        // 直前の音声の余韻(エコー)が収まるのを少し待ってからマイクを起動する
+        setTimeout(() => {
+            // 待っている間に別の音声が始まっていたら（既に次に進んでいたら）起動しない
+            if (currentAudio) return;
+            recognition.start();
+            activeRecognition = recognition;
+        }, ECHO_GUARD_MS);
     };
 
-    // Start recognition immediately (beep removed)
     doRecognition();
 }
 
@@ -395,14 +416,15 @@ function playSound(file, callback) {
     stopAllSounds();
     currentAudio = new Audio(file);
     currentAudio.play().then(() => {
-        if (callback) {
-            currentAudio.onended = () => {
-                currentAudio = null;
-                callback();
-            };
-        }
+        currentAudio.onended = () => {
+            currentAudio = null;
+            lastAudioEndedAt = Date.now();
+            if (callback) callback();
+        };
     }).catch(e => {
         console.error("再生エラー:", file, e);
+        currentAudio = null;
+        lastAudioEndedAt = Date.now();
         if (callback) callback();
     });
 }
