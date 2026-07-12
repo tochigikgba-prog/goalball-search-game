@@ -213,7 +213,7 @@ function announceBackHintOnce(callback) {
             return;
         }
         try {
-            const msg = new SpeechSynthesisUtterance('困ったときは、いつでも「もどる」と言うと戻れるのだ！');
+            const msg = new SpeechSynthesisUtterance('困ったときは、いつでも「もどる」と言うと戻れます。');
             msg.lang = 'ja-JP';
             msg.onend = callback;
             msg.onerror = (e) => { console.warn('[戻る案内] TTSのonerror', e); callback(); };
@@ -513,7 +513,7 @@ function announceNamePromptAndListen() {
             return;
         }
         try {
-            const msg = new SpeechSynthesisUtterance('送信、と言うと送れるのだ！');
+            const msg = new SpeechSynthesisUtterance('送信、と言うと送信できます。');
             msg.lang = 'ja-JP';
             msg.onend = () => listenForSubmitCommand();
             msg.onerror = () => listenForSubmitCommand();
@@ -618,7 +618,7 @@ function announceNamePromptAndListen() {
     // 1. 録音済みの呼びかけ音声を試す → 2. 無ければ音声合成(TTS)で代用
     tryPlay('sound/name_prompt.wav', () => {
         try {
-            const msg = new SpeechSynthesisUtterance('スコアを残すからコートネームを言うのだ！');
+            const msg = new SpeechSynthesisUtterance('スコアを残すので、コートネームを言ってください。');
             msg.lang = 'ja-JP';
             msg.onend = startListening;
             msg.onerror = startListening;
@@ -646,10 +646,28 @@ async function submitScore() {
         if (status) status.innerText = "スコアを送信しました。ありがとう！";
         document.getElementById("scoreSubmitArea").style.display = "none";
         loadRanking();
+        announceScoreAndRank();
     } catch (err) {
         console.error('submitScore error', err);
         if (status) status.innerText = `送信に失敗しました: ${err.message || err}`;
         if (submitBtn) submitBtn.disabled = false;
+    }
+}
+
+// 送信したスコアと、自分が何位だったかを音声で読み上げる
+async function announceScoreAndRank() {
+    try {
+        // 自分より高いスコアの人数を数えて、+1すれば順位になる
+        const higherSnap = await db.collection("rankings").where("score", ">", score).get();
+        const rank = higherSnap.size + 1;
+
+        if (typeof window.speechSynthesis === 'undefined') return;
+        const msg = new SpeechSynthesisUtterance(`あなたのスコアは${score}点、順位は${rank}位です。`);
+        msg.lang = 'ja-JP';
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(msg);
+    } catch (e) {
+        console.warn('順位の読み上げに失敗しました', e);
     }
 }
 
@@ -780,7 +798,7 @@ function playGreetingWithFallback(onDone) {
     tryPlay('sound/zundamon_greeting_goalball.wav', () => {
         tryPlay('sound/zundamon_greeting_goalball.mp3', () => {
             try {
-                const msg = new SpeechSynthesisUtterance('ずんだもんなのだ！　声で合図してくれたら遊べるのだ。まずは「ゴールボール」と言ってみるのだ！');
+                const msg = new SpeechSynthesisUtterance('ゴールボールサーチゲームです。声で合図をすると遊べます。まずは「ゴールボール」と言ってみてください。');
                 msg.lang = 'ja-JP';
                 msg.onend = () => { if (onDone) onDone(); };
                 msg.onerror = () => { if (onDone) onDone(); };
