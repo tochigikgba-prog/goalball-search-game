@@ -406,6 +406,11 @@ async function startAnswerListening(retryCount = 0) {
         };
 
         recognition.onerror = (e) => {
+            if (e.error === 'aborted') {
+                // 次の音声に切り替えるために意図的に止めた時に出るだけなので、正常な動作
+                console.log('[音声認識] 次に進むためマイクを停止しました(正常)');
+                return;
+            }
             console.error('Recognition error', e);
             if (currentAudio) return; // 既に次の音声が始まっている＝別の場面に進んでいるので何もしない
             const blocked = e.error === 'not-allowed' || e.error === 'denied' || e.error === 'not-allowed';
@@ -778,6 +783,9 @@ function listenForGreetingConfirmation() {
         localStorage.setItem('micAllowed', '1');
         if (status) status.innerText = 'マイクの許可が確認できました。モードを選んでね。';
         if (btn) btn.style.display = 'none';
+        // モードを選ぶ前に、ここで先に「もどる」の案内を済ませておく
+        // （モード選択後だとクイズ開始が毎回遅れてしまうため）
+        announceBackHintOnce(() => {});
     }
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
