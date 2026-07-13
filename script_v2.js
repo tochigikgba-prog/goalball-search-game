@@ -27,6 +27,17 @@ let rankingsUnsub = null; // リアルタイム購読の解除関数
 let lastAudioEndedAt = 0; // 直前の音声再生が終わった時刻（エコー誤認識対策）
 const ECHO_GUARD_MS = 500; // 音声終了直後、この時間内の認識結果は誤認識とみなして無視する
 
+// iOS Safariは「新しいAudioオブジェクトを作り続ける」と一定数を超えたところで
+// 再生がエラーも出さず静かに失敗することがある（既知の制限）。
+// これを避けるため、毎回 new Audio() するのではなく、1つの要素を使い回す。
+let sfxAudioEl = null;
+function getSfxAudioEl() {
+    if (!sfxAudioEl) {
+        sfxAudioEl = new Audio();
+    }
+    return sfxAudioEl;
+}
+
 // 出題されるボールの位置
 const ballPositions = [0, 1, 2, 3, 4, 4.5, 5, 6, 7, 8, 9];
 
@@ -195,18 +206,23 @@ function announceBackHintOnce(callback) {
     console.log('[戻る案内] sound/return.wav の再生を試みます');
 
     stopAllSounds();
-    currentAudio = new Audio('sound/return.wav');
-    currentAudio.play().then(() => {
+    const audioEl = getSfxAudioEl();
+    audioEl.onended = null;
+    audioEl.pause();
+    audioEl.currentTime = 0;
+    audioEl.src = 'sound/return.wav';
+    currentAudio = audioEl;
+    audioEl.play().then(() => {
         console.log('[戻る案内] return.wav 再生開始に成功');
-        currentAudio.onended = () => {
+        audioEl.onended = () => {
             console.log('[戻る案内] return.wav 再生終了');
-            currentAudio = null;
+            if (currentAudio === audioEl) currentAudio = null;
             lastAudioEndedAt = Date.now();
             callback();
         };
     }).catch(err => {
         console.warn('[戻る案内] return.wav の再生に失敗、TTSにフォールバックします:', err);
-        currentAudio = null;
+        if (currentAudio === audioEl) currentAudio = null;
         if (typeof window.speechSynthesis === 'undefined') {
             console.warn('[戻る案内] このブラウザは音声合成(speechSynthesis)に非対応です');
             callback();
@@ -466,16 +482,21 @@ function startVoiceInput() {
 
 function playSound(file, callback) {
     stopAllSounds();
-    currentAudio = new Audio(file);
-    currentAudio.play().then(() => {
-        currentAudio.onended = () => {
-            currentAudio = null;
+    const audioEl = getSfxAudioEl();
+    audioEl.onended = null;
+    audioEl.pause();
+    audioEl.currentTime = 0;
+    audioEl.src = file;
+    currentAudio = audioEl;
+    audioEl.play().then(() => {
+        audioEl.onended = () => {
+            if (currentAudio === audioEl) currentAudio = null;
             lastAudioEndedAt = Date.now();
             if (callback) callback();
         };
     }).catch(e => {
         console.error("再生エラー:", file, e);
-        currentAudio = null;
+        if (currentAudio === audioEl) currentAudio = null;
         lastAudioEndedAt = Date.now();
         if (callback) callback();
     });
@@ -602,15 +623,20 @@ function announceNamePromptAndListen() {
 
     function tryPlay(src, onFail) {
         stopAllSounds();
-        currentAudio = new Audio(src);
-        currentAudio.play().then(() => {
-            currentAudio.onended = () => {
-                currentAudio = null;
+        const audioEl = getSfxAudioEl();
+        audioEl.onended = null;
+        audioEl.pause();
+        audioEl.currentTime = 0;
+        audioEl.src = src;
+        currentAudio = audioEl;
+        audioEl.play().then(() => {
+            audioEl.onended = () => {
+                if (currentAudio === audioEl) currentAudio = null;
                 startListening();
             };
         }).catch(err => {
             console.warn('名前プロンプト音声の再生に失敗:', src, err);
-            currentAudio = null;
+            if (currentAudio === audioEl) currentAudio = null;
             if (onFail) onFail();
         });
     }
@@ -781,15 +807,20 @@ window.addEventListener('load', () => {
 function playGreetingWithFallback(onDone) {
     function tryPlay(src, onFail) {
         stopAllSounds();
-        currentAudio = new Audio(src);
-        currentAudio.play().then(() => {
-            currentAudio.onended = () => {
-                currentAudio = null;
+        const audioEl = getSfxAudioEl();
+        audioEl.onended = null;
+        audioEl.pause();
+        audioEl.currentTime = 0;
+        audioEl.src = src;
+        currentAudio = audioEl;
+        audioEl.play().then(() => {
+            audioEl.onended = () => {
+                if (currentAudio === audioEl) currentAudio = null;
                 if (onDone) onDone();
             };
         }).catch(err => {
             console.warn('挨拶音声の再生に失敗:', src, err);
-            currentAudio = null;
+            if (currentAudio === audioEl) currentAudio = null;
             if (onFail) onFail();
         });
     }
